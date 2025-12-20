@@ -6,7 +6,6 @@
 /storage/*.key
 /vendor
 /public/sbadmin/vendor
-.env
 .env.backup
 .env.production
 .phpunit.result.cache
