@@ -15,8 +15,6 @@
             <tr><th>Baku Mutu</th><td>{{ $i->baku_mutu }}</td></tr>
         </table>
 
-        <a href="{{ route('admin.indikator.index') }}" class="btn btn-secondary">Kembali</a>
-
     </div>
 </div>
 

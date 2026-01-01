@@ -37,7 +37,6 @@
                     <td>{{ $obs->shu }}</td>
                 </tr>
             </table>
-            <a href="{{ route('admin.observasi.index') }}" class="btn btn-secondary">Kembali</a>
 
         </div>
     </div>

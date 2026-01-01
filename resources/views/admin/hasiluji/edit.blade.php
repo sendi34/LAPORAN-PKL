@@ -73,9 +73,6 @@
             <button type="submit" class="btn btn-success mt-3">
                 Update
             </button>
-            <a href="{{ route('admin.hasiluji.index') }}" class="btn btn-secondary mt-3">
-                Batal
-            </a>
         </form>
     </div>
 </div>

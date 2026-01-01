@@ -10,9 +10,6 @@
             <button type="submit" class="btn btn-success mt-3">
                 <i class="fas fa-save"></i> Simpan
             </button>
-            <a href="{{ route('admin.hasiluji.index') }}" class="btn btn-secondary mt-3">
-                Batal
-            </a>
         </form>
     </div>
 </div>

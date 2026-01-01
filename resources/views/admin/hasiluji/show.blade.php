@@ -71,12 +71,6 @@
         <div class="border rounded p-3 bg-light">
             {{ $dataHasil->first()->keterangan ?? '-' }}
         </div>
-
-        <div class="mt-4">
-            <a href="{{ route('admin.hasiluji.index') }}" class="btn btn-secondary">
-                Kembali
-            </a>
-        </div>
     </div>
 </div>
 @endsection

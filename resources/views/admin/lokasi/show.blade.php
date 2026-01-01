@@ -17,7 +17,6 @@
             <tr><th>Peruntukan</th><td>{{ $lokasi->peruntukan }}</td></tr>
         </table>
 
-        <a href="{{ route('admin.lokasi.index') }}" class="btn btn-secondary">Kembali</a>
 
     </div>
 </div>

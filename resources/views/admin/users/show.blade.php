@@ -15,7 +15,7 @@
             <tr><th>Dibuat</th><td>{{ $user->created_at }}</td></tr>
         </table>
 
-        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">Kembali</a>
+        
 
     </div>
 </div>

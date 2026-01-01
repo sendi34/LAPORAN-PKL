@@ -10,9 +10,6 @@
             @csrf
             @include('admin.lokasi.form')
             <button class="btn btn-success mt-3">Simpan</button>
-            <a href="{{ route('admin.lokasi.index') }}" class="btn btn-secondary mt-3">
-                Batal
-            </a>
         </form>
     </div>
 </div>
