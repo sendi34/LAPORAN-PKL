@@ -6,8 +6,7 @@
     <title>Login</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" 
-          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <style>
         body {
@@ -59,7 +58,7 @@
 <body class="d-flex align-items-center justify-content-center">
 
     <div class="login-wrapper row">
-        
+
         <!-- LEFT IMAGE / WELCOME -->
         <div class="col-md-6 d-flex flex-column justify-content-center align-items-center p-4 left-side">
             <h2 class="fw-bold mb-3">Selamat Datang</h2>
@@ -87,23 +86,26 @@
                 <!-- EMAIL -->
                 <div class="mb-3 position-relative">
                     <i class="bi bi-envelope-fill input-icon"></i>
-                    <input type="email" name="email" class="form-control" placeholder="Alamat Email" 
-                           required value="{{ old('email') }}">
+                    <input type="email" name="email" class="form-control" placeholder="Alamat Email" required
+                        value="{{ old('email') }}">
                 </div>
 
                 <!-- PASSWORD -->
                 <div class="mb-3 position-relative">
                     <i class="bi bi-lock-fill input-icon"></i>
 
-                    <input type="password" name="password" id="passwordInput" 
-                           class="form-control" placeholder="Password" required>
+                    <input type="password" name="password" id="passwordInput" class="form-control"
+                        placeholder="Password" required>
 
                     <i class="bi bi-eye-fill toggle-password" id="togglePassword"></i>
                 </div>
 
-                <button class="btn btn-primary w-100 py-2 rounded-3 mt-2">
-                    Masuk
-                </button>
+                <div class="d-flex justify-content-center">
+                    <button class="btn btn-primary w-50 py-2 rounded-3 mt-2">
+                        Masuk
+                    </button>
+                </div>
+
             </form>
         </div>
     </div>
@@ -122,4 +124,5 @@
     </script>
 
 </body>
+
 </html>
