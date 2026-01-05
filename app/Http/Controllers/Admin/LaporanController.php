@@ -195,10 +195,22 @@ class LaporanController extends Controller
             'observasi.tahun_pemantauan as tahun',
             'observasi.periode_pemantauan as periode',
             'indikator_uji.nama_indikator as parameter_uji',
-            'hasil_uji.nilai',
+
+           
+            DB::raw('ROUND(hasil_uji.nilai, 2) as nilai'),
+
             'indikator_uji.satuan',
-            'indikator_uji.baku_mutu',
-            DB::raw("IF(hasil_uji.nilai > indikator_uji.baku_mutu, 'Melebihi Baku Mutu', 'Sesuai') AS status")
+
+            
+            DB::raw('ROUND(indikator_uji.baku_mutu, 2) as baku_mutu'),
+
+            DB::raw("
+                IF(
+                    ROUND(hasil_uji.nilai, 2) > ROUND(indikator_uji.baku_mutu, 2),
+                    'Melebihi Baku Mutu',
+                    'Sesuai'
+                ) AS status
+            ")
         );
 
     if ($lokasi_id) {
@@ -215,6 +227,7 @@ class LaporanController extends Controller
 
     return $q->orderBy('lokasi.kode_lokasi')->get();
 }
+
 
 
     // ============================================================
