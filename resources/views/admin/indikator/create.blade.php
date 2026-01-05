@@ -3,7 +3,7 @@
 
 @section('content')
 
-<h1 class="h3 mb-4">Tambah Parameter Uji</h1>
+<h1 class="h3 mb-4">Tambah Parameter</h1>
 
 <div class="card shadow">
     <div class="card-body">

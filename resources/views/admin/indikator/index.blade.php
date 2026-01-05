@@ -4,7 +4,7 @@
 @section('content')
 
 <div class="d-flex justify-content-between mb-4">
-    <h1 class="h3">Data Parameter Uji</h1>
+    <h1 class="h3">Data Parameter</h1>
     <a href="{{ route('admin.indikator.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah Parameter</a>
 </div>
 

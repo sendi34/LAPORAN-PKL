@@ -18,7 +18,7 @@
     </div>
     <div class="col-md-3 mb-3">
         <div class="card shadow border-left-warning p-3">
-            <h6>Total Indikator</h6>
+            <h6>Total Parameter</h6>
             <h3>{{ $totalIndikator }}</h3>
         </div>
     </div>

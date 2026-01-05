@@ -5,7 +5,7 @@
 
     <div class="d-flex justify-content-between mb-4">
         <h1 class="h3">Data Pengguna</h1>
-        <a href="{{ route('admin.users.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah User</a>
+        <a href="{{ route('admin.users.create') }}" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah Pengguna</a>
     </div>
 
     @if (session('success'))
