@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Petugas;
 
 use App\Http\Controllers\Controller;
@@ -14,21 +15,22 @@ class DashboardController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | A. GRAFIK RATA-RATA NILAI UJI PER INDIKATOR
+        | A. NILAI UJI BERDASARKAN PERUNTUKAN
         |--------------------------------------------------------------------------
         */
-        $rataIndikator = DB::table('hasil_uji')
+        $nilaiIndikator = DB::table('hasil_uji')
             ->join('indikator_uji', 'indikator_uji.id', '=', 'hasil_uji.indikator_id')
             ->join('observasi', 'observasi.id', '=', 'hasil_uji.observasi_id')
+            ->join('lokasi', 'lokasi.id', '=', 'observasi.location_id')
             ->where('observasi.user_id', $user)
             ->where('observasi.tahun_pemantauan', $tahun)
             ->select(
                 'indikator_uji.nama_indikator',
-                DB::raw('COALESCE(AVG(hasil_uji.nilai), 0) AS rata_nilai'),
-                'indikator_uji.baku_mutu'
+                'hasil_uji.nilai',
+                'lokasi.peruntukan'
             )
-            ->groupBy('indikator_uji.nama_indikator', 'indikator_uji.baku_mutu')
             ->get();
+
 
         /*
         |--------------------------------------------------------------------------
@@ -46,26 +48,31 @@ class DashboardController extends Controller
             ->groupBy('lokasi.alamat_lokasi')
             ->get();
 
+
         /*
         |--------------------------------------------------------------------------
-        | C. PIE CHART — LOKASI ADA SHU vs TIDAK ADA SHU
-        | FIX: Kolom shu adalah ENUM('ADA SHU', 'TIDAK ADA SHU'), bukan NULL
+        | C. DATA LOKASI UNTUK PETA
         |--------------------------------------------------------------------------
         */
-        $shuData = DB::table('observasi')
-            ->where('user_id', $user)
-            ->where('tahun_pemantauan', $tahun)
+        $lokasiMap = DB::table('lokasi')
+            ->join('observasi', 'observasi.location_id', '=', 'lokasi.id')
+            ->where('observasi.user_id', $user)
+            ->where('observasi.tahun_pemantauan', $tahun)
             ->select(
-                DB::raw("SUM(CASE WHEN shu = 'ADA SHU' THEN 1 ELSE 0 END) AS ada_shu"),
-                DB::raw("SUM(CASE WHEN shu = 'TIDAK ADA SHU' THEN 1 ELSE 0 END) AS tidak_shu")
+                'lokasi.nama_lokasi',
+                'lokasi.alamat_lokasi',
+                'lokasi.latitude',
+                'lokasi.longitude'
             )
-            ->first();
+            ->distinct()
+            ->get();
+
 
         return view('petugas.dashboard', [
-            'tahun'          => $tahun,
-            'rataIndikator'  => $rataIndikator,
-            'observasiLokasi'=> $observasiLokasi,
-            'shuData'        => $shuData,
+            'tahun'           => $tahun,
+            'nilaiIndikator'  => $nilaiIndikator,
+            'observasiLokasi' => $observasiLokasi,
+            'lokasiMap'       => $lokasiMap
         ]);
     }
 }

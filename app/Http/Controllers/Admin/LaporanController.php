@@ -202,11 +202,11 @@ class LaporanController extends Controller
             'indikator_uji.satuan',
 
             
-            DB::raw('ROUND(indikator_uji.baku_mutu, 2) as baku_mutu'),
+            DB::raw('ROUND(hasil_uji.baku_mutu, 2) as baku_mutu'),
 
             DB::raw("
                 IF(
-                    ROUND(hasil_uji.nilai, 2) > ROUND(indikator_uji.baku_mutu, 2),
+                    ROUND(hasil_uji.nilai, 2) > ROUND(hasil_uji.baku_mutu, 2),
                     'Melebihi Baku Mutu',
                     'Sesuai'
                 ) AS status
@@ -317,12 +317,12 @@ class LaporanController extends Controller
             'lokasi.alamat_lokasi',
             'observasi.tahun_pemantauan as tahun',
             'observasi.periode_pemantauan as periode',
-            DB::raw('COUNT(CASE WHEN hasil_uji.nilai > indikator_uji.baku_mutu THEN 1 END) AS total_pelanggaran'),
+            DB::raw('COUNT(CASE WHEN hasil_uji.nilai > hasil_uji.baku_mutu THEN 1 END) AS total_pelanggaran'),
             DB::raw('COUNT(DISTINCT hasil_uji.indikator_id) AS jumlah_parameter'),
-            DB::raw('ROUND(AVG(CASE WHEN hasil_uji.nilai > indikator_uji.baku_mutu THEN (hasil_uji.nilai - indikator_uji.baku_mutu) END), 2) AS rata_selisih'),
-            DB::raw('ROUND(MAX(CASE WHEN hasil_uji.nilai > indikator_uji.baku_mutu THEN hasil_uji.nilai END), 2) AS nilai_tertinggi'),
-            DB::raw('ROUND((COUNT(CASE WHEN hasil_uji.nilai > indikator_uji.baku_mutu THEN 1 END) * 100.0 / COUNT(hasil_uji.id)), 2) AS persentase_pelanggaran'),
-            DB::raw('GROUP_CONCAT(DISTINCT CASE WHEN hasil_uji.nilai > indikator_uji.baku_mutu THEN indikator_uji.nama_indikator END ORDER BY indikator_uji.nama_indikator SEPARATOR ", ") AS parameter_bermasalah')
+            DB::raw('ROUND(AVG(CASE WHEN hasil_uji.nilai > hasil_uji.baku_mutu THEN (hasil_uji.nilai - hasil_uji.baku_mutu) END), 2) AS rata_selisih'),
+            DB::raw('ROUND(MAX(CASE WHEN hasil_uji.nilai > hasil_uji.baku_mutu THEN hasil_uji.nilai END), 2) AS nilai_tertinggi'),
+            DB::raw('ROUND((COUNT(CASE WHEN hasil_uji.nilai > hasil_uji.baku_mutu THEN 1 END) * 100.0 / COUNT(hasil_uji.id)), 2) AS persentase_pelanggaran'),
+            DB::raw('GROUP_CONCAT(DISTINCT CASE WHEN hasil_uji.nilai > hasil_uji.baku_mutu THEN indikator_uji.nama_indikator END ORDER BY indikator_uji.nama_indikator SEPARATOR ", ") AS parameter_bermasalah')
         );
 
     if ($tahun) {
@@ -364,10 +364,10 @@ class LaporanController extends Controller
             'lokasi.alamat_lokasi',
             'indikator_uji.nama_indikator AS nama_parameter',
             'hasil_uji.nilai',
-            'indikator_uji.baku_mutu',
-            DB::raw('(hasil_uji.nilai - indikator_uji.baku_mutu) AS selisih'),
+            'hasil_uji.baku_mutu',
+            DB::raw('(hasil_uji.nilai - hasil_uji.baku_mutu) AS selisih'),
         )
-        ->whereRaw('hasil_uji.nilai > indikator_uji.baku_mutu');
+        ->whereRaw('hasil_uji.nilai > hasil_uji.baku_mutu');
 
     if ($tahun) {
         $q->where('observasi.tahun_pemantauan', $tahun);

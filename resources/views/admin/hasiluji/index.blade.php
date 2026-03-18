@@ -42,6 +42,9 @@
                             <tr>
                                 <td>
                                     <strong>{{ $obs->lokasi->nama_lokasi }}</strong><br>
+                                    <span class="text-muted">
+                                        Peruntukan : {{ $obs->lokasi->peruntukan }}
+                                    </span><br>
                                     <small class="text-muted">
                                         <i class="fas fa-map-marker-alt"></i> {{ $obs->lokasi->alamat_lokasi }}
                                     </small><br>
@@ -74,13 +77,16 @@
                                             @foreach ($items as $hu)
                                                 <tr>
                                                     <td>{{ $hu->indikator->nama_indikator }}</td>
-                                                    <td>{{ (float) $hu->nilai }}</td>
-                                                    <td>{{ (float) $hu->indikator->baku_mutu }}</td>
+                                                    <td>{{ rtrim(rtrim(number_format($hu->nilai, 4, '.', ''), '0'), '.') }}</td>
+                                                    <td>{{ rtrim(rtrim(number_format($hu->baku_mutu, 4, '.', ''), '0'), '.') }}
+                                                    </td>
                                                     <td>
-                                                        @if ($hu->nilai <= $hu->indikator->baku_mutu)
+                                                        @if ($hu->status == 'Memenuhi Baku Mutu')
                                                             <span class="badge bg-success text-white">Memenuhi</span>
-                                                        @else
-                                                            <span class="badge bg-danger text-white">Melebihi</span>
+                                                        @elseif ($hu->status == 'Tercemar Ringan')
+                                                            <span class="badge bg-warning text-white">Tercemar Ringan</span>
+                                                        @elseif ($hu->status == 'Tercemar Berat')
+                                                            <span class="badge bg-danger text-white">Tercemar Berat</span>
                                                         @endif
                                                     </td>
                                                 </tr>

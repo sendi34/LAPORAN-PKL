@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\HasilUji;
 use App\Models\Observasi;
 use App\Models\IndikatorUji;
+use App\Models\BakuMutuPeruntukan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -54,17 +55,48 @@ class HasilUjiController extends Controller
             $filePath = $file->store('hasil_uji', 'public');
         }
 
-        // Simpan data untuk setiap indikator
-        foreach ($request->indikator_id as $i => $id) {
-            HasilUji::create([
-                'observasi_id' => $request->observasi_id,
-                'indikator_id' => $id,
-                'nilai'        => $request->nilai[$i],
-                'keterangan'   => $request->keterangan,
-                'file_berkas'  => $filePath,
-            ]);
-        }
+     $observasi = Observasi::with('lokasi')->findOrFail($request->observasi_id);
 
+$peruntukan = $observasi->lokasi->peruntukan;
+
+foreach ($request->indikator_id as $i => $indikatorId) {
+
+    $nilai = $request->nilai[$i];
+
+    // ambil baku mutu berdasarkan parameter + peruntukan
+    $baku = BakuMutuPeruntukan::where('indikator_id', $indikatorId)
+        ->whereRaw('LOWER(peruntukan) = ?', [strtolower(trim($peruntukan))])
+        ->first();
+
+    $bakuMutu = optional($baku)->baku_mutu;
+
+    // menentukan status
+    $status = null;
+
+            if ($bakuMutu !== null) {
+
+                if ($nilai <= $bakuMutu) {
+                    $status = 'Memenuhi Baku Mutu';
+                } 
+                elseif ($nilai <= ($bakuMutu * 2)) {
+                    $status = 'Tercemar Ringan';
+                } 
+                else {
+                    $status = 'Tercemar Berat';
+                }
+
+            }
+
+    HasilUji::create([
+        'observasi_id' => $observasi->id,
+        'indikator_id' => $indikatorId,
+        'nilai'        => $nilai,
+        'baku_mutu'    => $bakuMutu,
+        'status'       => $status,
+        'keterangan'   => $request->keterangan,
+        'file_berkas'  => $filePath,
+    ]);
+}
         return redirect()->route('petugas.hasiluji.index')
             ->with('success', 'hasil uji berhasil ditambahkan.');
     }
@@ -125,7 +157,8 @@ class HasilUjiController extends Controller
         $userId = auth()->id();
 
         // Pastikan observasi milik user yang login
-        $observasiSingle = Observasi::where('id', $observasi_id)
+        $observasiSingle = Observasi::with('lokasi')
+    ->where('id', $observasi_id)
                         ->where('user_id', $userId)
                         ->firstOrFail();
 
@@ -151,23 +184,53 @@ class HasilUjiController extends Controller
             $filePath = $file->store('hasil_uji', 'public');
         }
 
-        // Update semua indikator
-        foreach ($request->indikator_id as $i => $id) {
-            HasilUji::updateOrCreate(
-                [
-                    'observasi_id' => $observasi_id,
-                    'indikator_id' => $id
-                ],
-                [
-                    'nilai'       => $request->nilai[$i],
-                    'keterangan'  => $request->keterangan,
-                    'file_berkas' => $filePath,
-                ]
-            );
-        }
+       foreach ($request->indikator_id as $i => $id) {
 
-        return redirect()->route('petugas.hasiluji.index')
-            ->with('success', 'Hasil uji berhasil diperbarui.');
+    $nilai = $request->nilai[$i];
+
+    $peruntukan = $observasiSingle->lokasi->peruntukan;
+
+$baku = BakuMutuPeruntukan::where('indikator_id', $id)
+        ->whereRaw('LOWER(peruntukan) = ?', [strtolower(trim($peruntukan))])
+        ->first();
+
+    $bakuMutu = $baku ? $baku->baku_mutu : null;
+
+    $status = null;
+
+            if ($bakuMutu !== null) {
+
+                if ($nilai <= $bakuMutu) {
+                    $status = 'Memenuhi Baku Mutu';
+                } 
+                elseif ($nilai <= ($bakuMutu * 2)) {
+                    $status = 'Tercemar Ringan';
+                } 
+                else {
+                    $status = 'Tercemar Berat';
+                }
+
+            }
+
+    HasilUji::updateOrCreate(
+        [
+            'observasi_id' => $observasi_id,
+            'indikator_id' => $id
+        ],
+        [
+            'nilai'       => $nilai,
+            'baku_mutu'   => $bakuMutu,
+            'status'      => $status,
+            'keterangan'  => $request->keterangan,
+            'file_berkas' => $filePath,
+        ]
+    );
+}
+
+       return redirect()->route('petugas.hasiluji.index', [
+    'page' => $request->page
+])->with('success', 'Hasil uji berhasil diperbarui.');
+
     }
 
     public function destroy($id)

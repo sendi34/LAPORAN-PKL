@@ -194,7 +194,7 @@
                     <li class="nav-item @if (request()->routeIs('petugas.observasi.*')) active @endif">
                         <a class="nav-link" href="{{ route('petugas.observasi.index') }}">
                             <i class="fas fa-clipboard-list"></i>
-                            <span>Data Observasi</span>
+                            <span>Observasi</span>
                         </a>
                     </li>
 

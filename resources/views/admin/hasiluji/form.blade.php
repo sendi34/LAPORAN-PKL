@@ -39,7 +39,7 @@
 {{-- ======================================== --}}
 
 <div class="mb-3 mt-3">
-    <label>Keterangan (opsional)</label>
+    <label>Keterangan</label>
     <textarea name="keterangan" class="form-control">{{ (isset($hu) && $hu) ? $hu->keterangan : old('keterangan') }}</textarea>
 </div>
 

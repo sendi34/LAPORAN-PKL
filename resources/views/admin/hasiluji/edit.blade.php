@@ -47,13 +47,13 @@
             @endforeach
 
             <div class="mb-3 mt-3">
-                <label>Keterangan (opsional)</label>
+                <label>Keterangan</label>
                 <textarea name="keterangan" class="form-control">{{ (isset($hu) && $hu) ? $hu->keterangan : old('keterangan') }}</textarea>
             </div>
 
             {{-- FILE BERKAS SURAT HASIL UJI --}}
             <div class="mb-3">
-                <label>File Berkas Surat Hasil Uji (opsional)</label>
+                <label>File Berkas Surat Hasil Uji</label>
                 <input type="file" name="file_berkas" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                 <small class="text-muted">Format: PDF, JPG, PNG, DOC, DOCX (Max: 5MB)</small>
                 

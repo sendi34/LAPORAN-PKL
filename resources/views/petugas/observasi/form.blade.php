@@ -1,13 +1,13 @@
 <div class="mb-3">
     <label>Lokasi</label>
     <select name="location_id" class="form-control" required>
-        <option value="">-- Pilih Lokasi --</option>
-        @foreach($lokasi as $l)
-            <option value="{{ $l->id }}" {{ isset($obs) && $obs->location_id == $l->id ? 'selected':'' }}>
-                {{ $l->nama_lokasi }}
-            </option>
-        @endforeach
-    </select>
+    <option value="">-- Pilih Lokasi --</option>
+    @foreach($lokasi as $l)
+        <option value="{{ $l->id }}" {{ isset($obs) && $obs->location_id == $l->id ? 'selected':'' }}>
+            {{ $l->nama_lokasi }} - {{ $l->alamat_lokasi }}
+        </option>
+    @endforeach
+</select>
 </div>
 
 <div class="mb-3">
