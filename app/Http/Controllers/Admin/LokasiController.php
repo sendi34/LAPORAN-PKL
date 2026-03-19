@@ -11,8 +11,12 @@ class LokasiController extends Controller
     public function index()
 {
     $lokasi = Lokasi::orderByRaw("
-        CAST(REGEXP_REPLACE(nama_lokasi, '[^0-9]', '') AS UNSIGNED)
-    ")->paginate(10);
+    CASE 
+        WHEN nama_lokasi REGEXP '[0-9]' 
+        THEN CAST(REGEXP_REPLACE(nama_lokasi, '[^0-9]', '') AS UNSIGNED)
+        ELSE 99999
+    END
+")->paginate(10);
 
     return view('admin.lokasi.index', compact('lokasi'));
 }

@@ -20,40 +20,40 @@
     <link href="{{ asset('sbadmin/css/sb-admin-2.min.css') }}" rel="stylesheet">
 
     <style>
-    /* Fix ukuran icon pagination Laravel */
-    .pagination {
-        margin-bottom: 0;
-    }
-    
-    .pagination .page-link {
-        padding: 0.375rem 0.75rem;
-        font-size: 0.875rem;
-        line-height: 1.5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .pagination svg {
-        width: 14px !important;
-        height: 14px !important;
-        vertical-align: middle;
-    }
-    
-    .pagination .page-item {
-        margin: 0 2px;
-    }
-    
-    .pagination .page-item.disabled .page-link {
-        cursor: not-allowed;
-        opacity: 0.6;
-    }
-    
-    .pagination .page-item.active .page-link {
-        background-color: #4e73df;
-        border-color: #4e73df;
-    }
-</style>
+        /* Fix ukuran icon pagination Laravel */
+        .pagination {
+            margin-bottom: 0;
+        }
+
+        .pagination .page-link {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pagination svg {
+            width: 14px !important;
+            height: 14px !important;
+            vertical-align: middle;
+        }
+
+        .pagination .page-item {
+            margin: 0 2px;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #4e73df;
+            border-color: #4e73df;
+        }
+    </style>
 
     @stack('head')
 </head>
@@ -139,8 +139,8 @@
                     <hr class="sidebar-divider">
 
                     <!-- =======================
-                                LAPORAN
-                            ======================== -->
+                                            LAPORAN
+                                        ======================== -->
                     <div class="sidebar-heading text-white">LAPORAN</div>
 
                     <!-- Hasil uji per lokasi -->
@@ -159,15 +159,8 @@
                         </a>
                     </li>
 
-                    <!-- Aktivitas petugas -->
-                    <li class="nav-item {{ request()->is('admin/laporan/aktivitas-petugas') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.laporan.show', 'aktivitas-petugas') }}">
-                            <i class="fas fa-user-check"></i>
-                            <span>Aktivitas Petugas</span>
-                        </a>
-                    </li>
 
-                    <!-- Lokasi SHU -->
+                    <!-- Lokasi Rawan Pencemaran -->
                     <li class="nav-item {{ request()->is('admin/laporan/lokasi-rawan-pencemaran') ? 'active' : '' }}">
                         <a class="nav-link" href="{{ route('admin.laporan.show', 'lokasi-rawan-pencemaran') }}">
                             <i class="fas fa-map"></i>
@@ -180,6 +173,38 @@
                         <a class="nav-link" href="{{ route('admin.laporan.show', 'indikator-melebihi-baku') }}">
                             <i class="fas fa-exclamation-triangle"></i>
                             <span>Rekap Indikator Melebihi Baku Mutu</span>
+                        </a>
+                    </li>
+
+                    <!-- Status Mutu Air -->
+                    <li class="nav-item {{ request()->is('admin/laporan/status-mutu-air') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.laporan.show', 'status-mutu-air') }}">
+                            <i class="fas fa-water"></i>
+                            <span>Status Mutu Air</span>
+                        </a>
+                    </li>
+
+                    <!-- Parameter Dominan Tercemar -->
+                    <li class="nav-item {{ request()->is('admin/laporan/parameter-dominan') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.laporan.show', 'parameter-dominan') }}">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Parameter Dominan Tercemar</span>
+                        </a>
+                    </li>
+
+                    <!-- Perbandingan Peruntukan -->
+                    <li class="nav-item {{ request()->is('admin/laporan/perbandingan-peruntukan') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.laporan.show', 'perbandingan-peruntukan') }}">
+                            <i class="fas fa-balance-scale"></i>
+                            <span>Perbandingan Peruntukan</span>
+                        </a>
+                    </li>
+
+                    <!-- Perbandingan Peruntukan -->
+                    <li class="nav-item {{ request()->is('admin/laporan/tren-kualitas-air') ? 'active' : '' }}">
+                        <a class="nav-link" href="{{ route('admin.laporan.show', 'tren-kualitas-air') }}">
+                            <i class="fas fa-chart-line"></i>
+                            <span>Tren Kualitas Air</span>
                         </a>
                     </li>
 

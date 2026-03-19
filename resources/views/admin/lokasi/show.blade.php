@@ -16,7 +16,7 @@
             <tr><th>Alamat</th><td>{{ $lokasi->alamat_lokasi }}</td></tr>
             <tr><th>Provinsi</th><td>{{ $lokasi->provinsi }}</td></tr>
             <tr><th>Latitude</th><td>{{ $lokasi->latitude }}</td></tr>
-            <tr><th>Longtitude</th><td>{{ $lokasi->longtitude }}</td></tr>
+            <tr><th>Longitude</th><td>{{ $lokasi->longitude }}</td></tr>
             <tr><th>Peruntukan</th><td>{{ $lokasi->peruntukan }}</td></tr>
         </table>
 
@@ -33,7 +33,7 @@
 <script>
 
 var latitude = {{ $lokasi->latitude ?? 0 }};
-var longitude = {{ $lokasi->longtitude ?? 0 }};
+var longitude = {{ $lokasi->longitude ?? 0 }};
 
 var map = L.map('map').setView([latitude, longitude], 12);
 

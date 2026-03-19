@@ -3,7 +3,6 @@
 
 <head>
     <style>
-        /* Pengaturan orientasi landscape untuk cetak */
         @page {
             size: A4 landscape;
             margin: 15mm;
@@ -69,19 +68,6 @@
             text-align: right;
         }
 
-        .footer-ttd img {
-            width: 130px;
-            margin-right: 45px;
-        }
-
-        .stempel {
-            position: absolute;
-            left: 80px;
-            margin-top: -20px;
-            opacity: 0.9;
-            width: 120px;
-        }
-
         .clear {
             clear: both;
         }
@@ -96,44 +82,57 @@
 </head>
 
 <body>
-    <!-- KOP SURAT -->
+
+    <!-- KOP -->
     <div class="kop-container">
-        <img src="{{ public_path('logo-dlh.png') }}" class="kop-logo" alt="Logo DLH">
+        <img src="{{ public_path('logo-dlh.png') }}" class="kop-logo">
         <div class="kop-text">
             <strong>PEMERINTAH PROVINSI KALIMANTAN SELATAN</strong><br>
             <strong>DINAS LINGKUNGAN HIDUP</strong><br>
-            Jalan Bangun Praja, Kel. Palam, Kec. Cempaka, Banjarbaru, Kalimantan Selatan 70732 <br> (Kawasan Perkantoran
-            Pemerintah Provinsi Kalimantan Selatan) <br>
-            Telp/Faks: 0511-6749-241; Laman: www.dlh.kalselprov.go.id; Pos-el : blhdkalsel@gmail.com
+            Jalan Bangun Praja, Kel. Palam, Kec. Cempaka, Banjarbaru<br>
+            Telp: 0511-6749-241
         </div>
         <div class="clear"></div>
     </div>
+
+    <!-- JUDUL -->
     <h3 style="text-align:center; margin-top:15px;">
-        LAPORAN AKTIVITAS PETUGAS PER TAHUN
+        LAPORAN TREN KUALITAS AIR
     </h3>
+
+    <!-- TABEL -->
     <table>
         <thead>
             <tr>
                 <th>No</th>
-                <th>Nama Petugas</th>
-                <th>Tahun - Periode</th>
-                <th>Jumlah Lokasi Sudah diuji</th>
-                <th>Jumlah Observasi</th>
+                <th>Tahun</th>
+                <th>Parameter</th>
+                <th>Rata Nilai</th>
+                <th>Trend</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($data as $i => $row)
                 <tr>
                     <td>{{ $i + 1 }}</td>
-                    <td>{{ $row->nama }}</td>
-                    <td>{{ $row->tahun }} - {{ $row->periode == 1 ? 'I' : 'II' }}</td>
-                    <td>{{ $row->jumlah_lokasi_sudah_diuji }}</td>
-                    <td>{{ $row->jumlah_observasi }}</td>
+                    <td>{{ $row->tahun }}</td>
+                    <td>{{ $row->parameter }}</td>
+                    <td>{{ number_format($row->rata_nilai, 4) }}</td>
+                    <td>
+                        @if($row->trend == 'Naik')
+                            Naik
+                        @elseif($row->trend == 'Turun')
+                            Turun
+                        @else
+                            Stabil
+                        @endif
+                    </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
-    <!-- TANDA TANGAN -->
+
+    <!-- TTD -->
     <div class="footer-ttd">
         <p>Banjarbaru, {{ now()->translatedFormat('d F Y') }}</p>
         <p>Kepala Dinas Lingkungan Hidup,</p>
@@ -142,6 +141,7 @@
         Pembina Utama Muda (IV/c)<br>
         NIP. 19691212 199212 1 004
     </div>
+
 </body>
 
 </html>

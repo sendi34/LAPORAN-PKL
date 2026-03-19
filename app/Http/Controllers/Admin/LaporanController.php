@@ -41,15 +41,6 @@ class LaporanController extends Controller
                 $lokasi = null;
                 break;
 
-           case 'aktivitas-petugas':
-                $tahun = $request->query('tahun');
-                $petugas_id = $request->query('petugas_id');
-                $periode = $request->query('periode');
-                $data = $this->laporanAktivitasPetugas($tahun, $petugas_id, $periode);
-                $title = "Laporan Aktivitas Petugas";
-                $viewCetak = 'admin.laporan.cetak.cetak_aktivitas_petugas';
-                break;
-
          case 'lokasi-rawan-pencemaran':
                 $tahun = $request->query('tahun');
                 $periode = $request->query('periode');
@@ -74,6 +65,46 @@ class LaporanController extends Controller
                     $title .= " Periode " . ($periode == 1 ? 'I' : 'II');
                 }
                 $viewCetak = 'admin.laporan.cetak.cetak_indikator_melebihi';
+                break;
+            
+            case 'status-mutu-air':
+                $tahun = $request->query('tahun');
+                $periode = $request->query('periode');
+
+                $data = $this->laporanStatusMutuAir($tahun, $periode);
+
+                $title = "Laporan Status Mutu Air";
+                $viewCetak = 'admin.laporan.cetak.cetak_status_mutu';
+
+                break;
+
+            case 'parameter-dominan':
+                $tahun = $request->query('tahun');
+                $periode = $request->query('periode');
+
+                $data = $this->laporanParameterDominan($tahun, $periode);
+
+                $title = "Laporan Parameter Dominan Tercemar";
+
+                $viewCetak = 'admin.laporan.cetak.cetak_parameter_dominan';
+                break;
+
+
+            case 'perbandingan-peruntukan':
+                $tahun = $request->query('tahun');
+                $periode = $request->query('periode');
+
+                $data = $this->laporanPerbandinganPeruntukan($tahun, $periode);
+
+                $title = "Laporan Perbandingan Peruntukan Air Laut";
+
+                $viewCetak = 'admin.laporan.cetak.cetak_perbandingan_peruntukan';
+                break;
+
+            case 'tren-kualitas-air':
+                $data = $this->laporanTrenKualitasAir();
+                $title = "Laporan Tren Kualitas Air";
+                $viewCetak = 'admin.laporan.cetak.cetak_tren_kualitas';
                 break;
 
             default:
@@ -120,15 +151,6 @@ class LaporanController extends Controller
                 $view  = 'admin.laporan.cetak.cetak_rekap_tahunan';
                 break;
 
-            case 'aktivitas-petugas':
-                $tahun = $request->query('tahun');
-                $petugas_id = $request->query('petugas_id');
-                $periode = $request->query('periode');
-                $data = $this->laporanAktivitasPetugas($tahun, $petugas_id, $periode);
-                $title = "Laporan Aktivitas Petugas per Tahun";
-                $view  = 'admin.laporan.cetak.cetak_aktivitas_petugas';
-                break;
-
          case 'lokasi-rawan-pencemaran':
                 $tahun = $request->query('tahun');
                 $periode = $request->query('periode');
@@ -162,6 +184,69 @@ class LaporanController extends Controller
                     $title .= " Periode " . ($periode == 1 ? 'I' : 'II');
                 }
                 $view  = 'admin.laporan.cetak.cetak_indikator_melebihi';
+                break;
+            
+            case 'status-mutu-air':
+                $tahun = $request->query('tahun');
+                $periode = $request->query('periode');
+
+                $data = $this->laporanStatusMutuAir($tahun, $periode);
+
+                $title = "Laporan Status Mutu Air";
+
+                if ($tahun) {
+                    $title .= " Tahun " . $tahun;
+                }
+
+                if ($periode) {
+                    $title .= " Periode " . ($periode == 1 ? 'I' : 'II');
+                }
+
+                $view  = 'admin.laporan.cetak.cetak_status_mutu';
+                break;
+
+            case 'parameter-dominan':
+                $tahun = $request->query('tahun');
+                $periode = $request->query('periode');
+
+                $data = $this->laporanParameterDominan($tahun, $periode);
+
+                $title = "Laporan Parameter Dominan Tercemar";
+
+                if ($tahun) {
+                    $title .= " Tahun " . $tahun;
+                }
+
+                if ($periode) {
+                    $title .= " Periode " . ($periode == 1 ? 'I' : 'II');
+                }
+
+                $view = 'admin.laporan.cetak.cetak_parameter_dominan';
+                break;
+
+            case 'perbandingan-peruntukan':
+                $tahun = $request->query('tahun');
+                $periode = $request->query('periode');
+
+                $data = $this->laporanPerbandinganPeruntukan($tahun, $periode);
+
+                $title = "Laporan Perbandingan Peruntukan Air Laut";
+
+                if ($tahun) {
+                    $title .= " Tahun " . $tahun;
+                }
+
+                if ($periode) {
+                    $title .= " Periode " . ($periode == 1 ? 'I' : 'II');
+                }
+
+                $view = 'admin.laporan.cetak.cetak_perbandingan_peruntukan';
+                break;
+
+            case 'tren-kualitas-air':
+                $data = $this->laporanTrenKualitasAir();
+                $title = "Laporan Tren Kualitas Air";
+                $view = 'admin.laporan.cetak.cetak_tren_kualitas';
                 break;
 
             default:
@@ -228,8 +313,6 @@ class LaporanController extends Controller
     return $q->orderBy('lokasi.kode_lokasi')->get();
 }
 
-
-
     // ============================================================
     // 2. LAPORAN REKAPITULASI TAHUNAN KUALITAS AIR
     // ============================================================
@@ -261,50 +344,7 @@ class LaporanController extends Controller
 }
 
     // ============================================================
-    // 3. LAPORAN AKTIVITAS PETUGAS PER TAHUN
-    // ============================================================
-   private function laporanAktivitasPetugas($tahun = null, $petugas_id = null, $periode = null)
-{
-    $q = DB::table('observasi')
-        ->join('users', 'users.id', '=', 'observasi.user_id')
-        ->join('lokasi', 'lokasi.id', '=', 'observasi.location_id')
-        
-        // JOIN dengan hasil_uji untuk memastikan hanya yang sudah ada hasil ujinya
-        ->leftJoin('hasil_uji', 'hasil_uji.observasi_id', '=', 'observasi.id')
-        
-        ->select(
-            'users.nama',
-            'observasi.tahun_pemantauan as tahun',
-            'observasi.periode_pemantauan as periode',
-            
-            // Total observasi (termasuk yang belum ada hasil uji)
-            DB::raw('COUNT(DISTINCT observasi.id) AS jumlah_observasi'),
-            
-            // Hanya lokasi yang SUDAH ADA hasil ujinya
-            DB::raw('COUNT(DISTINCT CASE WHEN hasil_uji.id IS NOT NULL THEN lokasi.id END) AS jumlah_lokasi_sudah_diuji')
-        );
-
-    if ($tahun) {
-        $q->where('observasi.tahun_pemantauan', $tahun);
-    }
-
-    if ($petugas_id) {
-        $q->where('users.id', $petugas_id);
-    }
-
-    if ($periode) {
-        $q->where('observasi.periode_pemantauan', $periode);
-    }
-
-    return $q->groupBy('users.id', 'observasi.tahun_pemantauan', 'observasi.periode_pemantauan')
-             ->orderBy('users.nama')
-             ->orderBy('observasi.tahun_pemantauan', 'desc')
-             ->orderBy('observasi.periode_pemantauan')
-             ->get();
-}
-
-    // ============================================================
-    // 4. LAPORAN LOKASI BERDASARKAN SHU (FIXED!)
+    // 3. LAPORAN LOKASI PENCEMARAN
     // ============================================================
    private function laporanLokasiRawanPencemaran($tahun = null, $periode = null, $total_pelanggaran = null, $lokasi_id = null)
 {
@@ -350,7 +390,7 @@ class LaporanController extends Controller
 }
 
     // ============================================================
-    // 5. LAPORAN INDIKATOR MELEBIHI BAKU MUTU
+    // 4. LAPORAN INDIKATOR MELEBIHI BAKU MUTU
     // ============================================================
     private function laporanIndikatorMelebihiBaku($tahun = null, $lokasi_id = null, $periode = null, $indikator_id = null)
 {
@@ -390,5 +430,198 @@ class LaporanController extends Controller
              ->orderBy('observasi.periode_pemantauan')
              ->orderBy('lokasi.alamat_lokasi')
              ->get();
+}
+
+// ============================================================
+    // 5. LAPORAN INDIKATOR MELEBIHI BAKU MUTU
+    // ============================================================
+private function laporanStatusMutuAir($tahun = null, $periode = null)
+{
+    $q = DB::table('hasil_uji')
+        ->join('observasi', 'hasil_uji.observasi_id', '=', 'observasi.id')
+        ->join('lokasi', 'lokasi.id', '=', 'observasi.location_id')
+        ->select(
+            'lokasi.kode_lokasi',
+            'lokasi.alamat_lokasi',
+            'observasi.tahun_pemantauan as tahun',
+            'observasi.periode_pemantauan as periode',
+
+            DB::raw('COUNT(hasil_uji.id) as jumlah_parameter'),
+
+            DB::raw('COUNT(CASE 
+                WHEN hasil_uji.nilai > hasil_uji.baku_mutu 
+                THEN 1 END) as jumlah_melampaui'),
+
+            DB::raw('ROUND(
+                (COUNT(CASE WHEN hasil_uji.nilai > hasil_uji.baku_mutu THEN 1 END) * 100.0 
+                / COUNT(hasil_uji.id)), 2
+            ) as persen_pelanggaran')
+        );
+
+    if ($tahun) {
+        $q->where('observasi.tahun_pemantauan', $tahun);
+    }
+
+    if ($periode) {
+        $q->where('observasi.periode_pemantauan', $periode);
+    }
+
+    $data = $q->groupBy(
+            'lokasi.id',
+            'lokasi.kode_lokasi',
+            'lokasi.alamat_lokasi',
+            'observasi.tahun_pemantauan',
+            'observasi.periode_pemantauan'
+        )
+        ->orderBy('persen_pelanggaran', 'desc')
+        ->get();
+
+    // 🔥 TAMBAH STATUS
+    foreach ($data as $row) {
+        if ($row->persen_pelanggaran == 0) {
+            $row->status = 'Baik';
+        } elseif ($row->persen_pelanggaran <= 25) {
+            $row->status = 'Tercemar Ringan';
+        } elseif ($row->persen_pelanggaran <= 50) {
+            $row->status = 'Tercemar Sedang';
+        } else {
+            $row->status = 'Tercemar Berat';
+        }
+    }
+
+    return $data;
+}
+
+// ============================================================
+    // 6. LAPORAN PARAMETER DOMINAN TERCEMAR
+    // ============================================================
+private function laporanParameterDominan($tahun = null, $periode = null)
+{
+    $q = DB::table('hasil_uji')
+        ->join('observasi', 'hasil_uji.observasi_id', '=', 'observasi.id')
+        ->join('indikator_uji', 'indikator_uji.id', '=', 'hasil_uji.indikator_id')
+        ->select(
+            'indikator_uji.nama_indikator as parameter',
+
+            DB::raw('COUNT(CASE 
+                WHEN hasil_uji.nilai > hasil_uji.baku_mutu 
+                THEN 1 END) as jumlah_pelanggaran'),
+
+            DB::raw('ROUND(AVG(
+                CASE 
+                    WHEN hasil_uji.nilai > hasil_uji.baku_mutu 
+                    THEN (hasil_uji.nilai - hasil_uji.baku_mutu) 
+                END
+            ), 2) as rata_selisih')
+        );
+
+    if ($tahun) {
+        $q->where('observasi.tahun_pemantauan', $tahun);
+    }
+
+    if ($periode) {
+        $q->where('observasi.periode_pemantauan', $periode);
+    }
+
+    $data = $q->groupBy('indikator_uji.id', 'indikator_uji.nama_indikator')
+        ->orderBy('jumlah_pelanggaran', 'desc')
+        ->get();
+
+    // 🔥 TAMBAH STATUS DOMINAN
+    foreach ($data as $row) {
+        if ($row->jumlah_pelanggaran >= 10) {
+            $row->status = 'Dominan';
+        } elseif ($row->jumlah_pelanggaran >= 5) {
+            $row->status = 'Tinggi';
+        } elseif ($row->jumlah_pelanggaran >= 1) {
+            $row->status = 'Rendah';
+        } else {
+            $row->status = 'Tidak Ada';
+        }
+    }
+
+    return $data;
+}
+
+// ============================================================
+    // 7. LAPORAN PERBANDINGAN PERUNTUKAN
+    // ============================================================
+private function laporanPerbandinganPeruntukan($tahun = null, $periode = null)
+{
+    $q = DB::table('hasil_uji')
+        ->join('observasi', 'hasil_uji.observasi_id', '=', 'observasi.id')
+        ->join('lokasi', 'observasi.location_id', '=', 'lokasi.id')
+        ->join('indikator_uji', 'indikator_uji.id', '=', 'hasil_uji.indikator_id')
+        ->select(
+            'lokasi.peruntukan',
+
+            DB::raw('COUNT(hasil_uji.id) as jumlah_data'),
+
+            DB::raw('ROUND(AVG(hasil_uji.nilai), 2) as rata_nilai'),
+
+            DB::raw('COUNT(CASE 
+                WHEN hasil_uji.nilai > hasil_uji.baku_mutu 
+                THEN 1 END) as jumlah_melampaui'),
+
+            DB::raw('ROUND(
+                (COUNT(CASE WHEN hasil_uji.nilai > hasil_uji.baku_mutu THEN 1 END) * 100.0 
+                / COUNT(hasil_uji.id)), 2
+            ) as persen_pelanggaran')
+        );
+
+    if ($tahun) {
+        $q->where('observasi.tahun_pemantauan', $tahun);
+    }
+
+    if ($periode) {
+        $q->where('observasi.periode_pemantauan', $periode);
+    }
+
+    return $q->groupBy('lokasi.peruntukan')
+        ->orderBy('persen_pelanggaran', 'desc')
+        ->get();
+}
+
+// ============================================================
+    // 8. LAPORAN TREN KUALITAS AIR
+    // ============================================================
+private function laporanTrenKualitasAir()
+{
+    $data = DB::table('hasil_uji')
+        ->join('observasi', 'hasil_uji.observasi_id', '=', 'observasi.id')
+        ->join('indikator_uji', 'indikator_uji.id', '=', 'hasil_uji.indikator_id')
+        ->select(
+            'observasi.tahun_pemantauan as tahun',
+            'indikator_uji.nama_indikator as parameter',
+            DB::raw('ROUND(AVG(hasil_uji.nilai), 4) as rata_nilai')
+        )
+        ->groupBy('tahun', 'parameter')
+        ->orderBy('parameter')
+        ->orderBy('tahun')
+        ->get();
+
+    $result = [];
+    $last = [];
+
+    foreach ($data as $row) {
+        $param = $row->parameter;
+
+        if (!isset($last[$param])) {
+            $row->trend = '-';
+        } else {
+            if ($row->rata_nilai > $last[$param]) {
+                $row->trend = 'Naik';
+            } elseif ($row->rata_nilai < $last[$param]) {
+                $row->trend = 'Turun';
+            } else {
+                $row->trend = 'Stabil';
+            }
+        }
+
+        $last[$param] = $row->rata_nilai;
+        $result[] = $row;
+    }
+
+    return $result;
 }
 }
