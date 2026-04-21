@@ -9,7 +9,7 @@
             <option value="{{ $o->id }}" 
                 {{ (isset($observasiSingle) && $observasiSingle->id == $o->id) ? 'selected' : '' }}
                 {{ (isset($hu) && $hu && $hu->observasi_id == $o->id) ? 'selected' : '' }}>
-                {{ $o->lokasi->nama_lokasi }} | {{ $o->tanggal_pemantauan }} | {{ $o->periode_pemantauan }} | {{ $o->shu }}
+                {{ $o->lokasi->nama_lokasi }} | {{ $o->lokasi->peruntukan }} | {{ $o->tanggal_pemantauan }} | {{ $o->periode_pemantauan }} | {{ $o->shu }}
             </option>
         @endforeach
     </select>

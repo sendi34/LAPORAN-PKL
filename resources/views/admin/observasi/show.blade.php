@@ -13,6 +13,10 @@
                     <td>{{ $obs->lokasi->nama_lokasi }}</td>
                 </tr>
                 <tr>
+                    <th>Peruntukan</th>
+                    <td>{{ $obs->lokasi->peruntukan }}</td>
+                </tr>
+                <tr>
                     <th>Petugas</th>
                     <td>{{ $obs->user->nama }}</td>
                 </tr>

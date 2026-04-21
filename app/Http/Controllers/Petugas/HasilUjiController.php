@@ -55,6 +55,16 @@ class HasilUjiController extends Controller
             $filePath = $file->store('hasil_uji', 'public');
         }
 
+        $duplikat = HasilUji::where('observasi_id', $request->observasi_id)
+                ->whereIn('indikator_id', $request->indikator_id)
+                ->exists();
+
+        if ($duplikat) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Hasil uji untuk observasi ini sudah pernah diinput. Silakan gunakan fitur Edit untuk mengubah data.');
+        }
+
      $observasi = Observasi::with('lokasi')->findOrFail($request->observasi_id);
 
 $peruntukan = $observasi->lokasi->peruntukan;

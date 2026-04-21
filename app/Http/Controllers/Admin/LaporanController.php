@@ -102,7 +102,11 @@ class LaporanController extends Controller
                 break;
 
             case 'tren-kualitas-air':
-                $data = $this->laporanTrenKualitasAir();
+                $tahun_awal   = $request->query('tahun_awal');
+                $tahun_akhir  = $request->query('tahun_akhir');
+                $indikator_id = $request->query('indikator_id');
+                $lokasi_id    = $request->query('lokasi_id');
+                $data = $this->laporanTrenKualitasAir($tahun_awal, $tahun_akhir, $indikator_id, $lokasi_id);
                 $title = "Laporan Tren Kualitas Air";
                 $viewCetak = 'admin.laporan.cetak.cetak_tren_kualitas';
                 break;
@@ -244,7 +248,11 @@ class LaporanController extends Controller
                 break;
 
             case 'tren-kualitas-air':
-                $data = $this->laporanTrenKualitasAir();
+                $tahun_awal   = $request->query('tahun_awal');
+                $tahun_akhir  = $request->query('tahun_akhir');
+                $indikator_id = $request->query('indikator_id');
+                $lokasi_id    = $request->query('lokasi_id');
+                $data = $this->laporanTrenKualitasAir($tahun_awal, $tahun_akhir, $indikator_id, $lokasi_id);
                 $title = "Laporan Tren Kualitas Air";
                 $view = 'admin.laporan.cetak.cetak_tren_kualitas';
                 break;
@@ -280,22 +288,12 @@ class LaporanController extends Controller
             'observasi.tahun_pemantauan as tahun',
             'observasi.periode_pemantauan as periode',
             'indikator_uji.nama_indikator as parameter_uji',
-
-           
             DB::raw('ROUND(hasil_uji.nilai, 2) as nilai'),
-
             'indikator_uji.satuan',
-
-            
             DB::raw('ROUND(hasil_uji.baku_mutu, 2) as baku_mutu'),
 
-            DB::raw("
-                IF(
-                    ROUND(hasil_uji.nilai, 2) > ROUND(hasil_uji.baku_mutu, 2),
-                    'Melebihi Baku Mutu',
-                    'Sesuai'
-                ) AS status
-            ")
+            // ✅ Ambil langsung dari kolom status yang sudah tersimpan
+            'hasil_uji.status',
         );
 
     if ($lokasi_id) {
@@ -585,16 +583,25 @@ private function laporanPerbandinganPeruntukan($tahun = null, $periode = null)
 // ============================================================
     // 8. LAPORAN TREN KUALITAS AIR
     // ============================================================
-private function laporanTrenKualitasAir()
-{
+private function laporanTrenKualitasAir(
+    $tahun_awal = null, 
+    $tahun_akhir = null, 
+    $indikator_id = null, 
+    $lokasi_id = null
+) {
     $data = DB::table('hasil_uji')
         ->join('observasi', 'hasil_uji.observasi_id', '=', 'observasi.id')
         ->join('indikator_uji', 'indikator_uji.id', '=', 'hasil_uji.indikator_id')
+        ->join('lokasi', 'lokasi.id', '=', 'observasi.location_id') // tambah join lokasi
         ->select(
             'observasi.tahun_pemantauan as tahun',
             'indikator_uji.nama_indikator as parameter',
             DB::raw('ROUND(AVG(hasil_uji.nilai), 4) as rata_nilai')
         )
+        ->when($tahun_awal, fn($q) => $q->where('observasi.tahun_pemantauan', '>=', $tahun_awal))
+        ->when($tahun_akhir, fn($q) => $q->where('observasi.tahun_pemantauan', '<=', $tahun_akhir))
+        ->when($indikator_id, fn($q) => $q->where('hasil_uji.indikator_id', $indikator_id))
+        ->when($lokasi_id, fn($q) => $q->where('observasi.location_id', $lokasi_id))
         ->groupBy('tahun', 'parameter')
         ->orderBy('parameter')
         ->orderBy('tahun')

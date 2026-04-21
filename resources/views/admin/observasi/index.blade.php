@@ -18,6 +18,7 @@
                 <thead class="bg-primary text-white">
                     <tr>
                         <th>Lokasi</th>
+                        <th>Peruntukan</th>
                         <th>Petugas</th>
                         <th>Tanggal</th>
                         <th>Periode</th>
@@ -29,6 +30,7 @@
                     @foreach ($data as $o)
                         <tr>
                             <td>{{ $o->lokasi->nama_lokasi }}</td>
+                            <td>{{ $o->lokasi->peruntukan }}</td>
                             <td>{{ $o->user->nama }}</td>
                             <td>
                                 {{ \Carbon\Carbon::parse($o->tanggal_pemantauan)->locale('id')->translatedFormat('d F Y') }}

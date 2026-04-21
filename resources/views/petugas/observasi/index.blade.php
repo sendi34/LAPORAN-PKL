@@ -21,6 +21,7 @@
                     <tr>
                         <th width="5%">No</th>
                         <th>Lokasi</th>
+                        <th>Peruntukan</th>
                         <th>Tanggal</th>
                         <th>Periode</th>
                         <th>SHU</th>
@@ -32,6 +33,7 @@
                         <tr>
                             <td>{{ $loop->iteration }}</td>
                             <td>{{ $row->lokasi->nama_lokasi }}</td>
+                            <td>{{ $row->lokasi->peruntukan }}</td>
                             <td>
                                 {{ \Carbon\Carbon::parse($row->tanggal_pemantauan)->locale('id')->translatedFormat('d F Y') }}
                             </td>

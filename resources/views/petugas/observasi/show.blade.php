@@ -14,6 +14,10 @@
                     <td>{{ $obs->lokasi->nama_lokasi }}</td>
                 </tr>
                 <tr>
+                    <th>Peruntukan</th>
+                    <td>{{ $obs->lokasi->peruntukan }}</td>
+                </tr>
+                <tr>
                     <th>Tanggal</th>
                     <td>{{ \Carbon\Carbon::parse($obs->tanggal_pemantauan)->locale('id')->translatedFormat('d F Y') }}</td>
                 </tr>
