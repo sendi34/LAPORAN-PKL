@@ -111,6 +111,15 @@ class LaporanController extends Controller
                 $viewCetak = 'admin.laporan.cetak.cetak_tren_kualitas';
                 break;
 
+            case 'indeks-pencemaran':
+                $tahun     = $request->query('tahun');
+                $periode   = $request->query('periode');
+                $lokasi_id = $request->query('lokasi_id');
+                $data  = $this->laporanIndeksPencemaran($tahun, $periode, $lokasi_id);
+                $title = "Laporan Indeks Pencemaran Air Laut";
+                $viewCetak = 'admin.laporan.cetak.cetak_indeks_pencemaran';
+                break;
+
             default:
                 abort(404);
         }
@@ -255,6 +264,17 @@ class LaporanController extends Controller
                 $data = $this->laporanTrenKualitasAir($tahun_awal, $tahun_akhir, $indikator_id, $lokasi_id);
                 $title = "Laporan Tren Kualitas Air";
                 $view = 'admin.laporan.cetak.cetak_tren_kualitas';
+                break;
+
+            case 'indeks-pencemaran':
+                $tahun     = $request->query('tahun');
+                $periode   = $request->query('periode');
+                $lokasi_id = $request->query('lokasi_id');
+                $data  = $this->laporanIndeksPencemaran($tahun, $periode, $lokasi_id);
+                $title = "Laporan Indeks Pencemaran Air Laut";
+                if ($tahun)  $title .= " Tahun " . $tahun;
+                if ($periode) $title .= " Periode " . ($periode == 1 ? 'I' : 'II');
+                $view  = 'admin.laporan.cetak.cetak_indeks_pencemaran';
                 break;
 
             default:
@@ -628,6 +648,84 @@ private function laporanTrenKualitasAir(
         $last[$param] = $row->rata_nilai;
         $result[] = $row;
     }
+
+    return $result;
+}
+
+// ============================================================
+// 9. LAPORAN INDEKS PENCEMARAN (IP) - Kepmen LH No.115/2003
+// ============================================================
+private function laporanIndeksPencemaran($tahun = null, $periode = null, $lokasi_id = null)
+{
+    $q = DB::table('hasil_uji')
+        ->join('observasi', 'hasil_uji.observasi_id', '=', 'observasi.id')
+        ->join('lokasi', 'lokasi.id', '=', 'observasi.location_id')
+        ->join('indikator_uji', 'indikator_uji.id', '=', 'hasil_uji.indikator_id')
+        ->select(
+            'lokasi.kode_lokasi',
+            'lokasi.nama_lokasi',
+            'lokasi.alamat_lokasi',
+            'lokasi.peruntukan',
+            'observasi.id as observasi_id',
+            'observasi.tahun_pemantauan as tahun',
+            'observasi.periode_pemantauan as periode',
+            'indikator_uji.nama_indikator as parameter',
+            'hasil_uji.nilai',
+            'hasil_uji.baku_mutu'
+        )
+        ->whereNotNull('hasil_uji.baku_mutu')
+        ->whereNotNull('hasil_uji.nilai')
+        ->where('hasil_uji.baku_mutu', '>', 0);
+
+    if ($tahun)     $q->where('observasi.tahun_pemantauan', $tahun);
+    if ($periode)   $q->where('observasi.periode_pemantauan', $periode);
+    if ($lokasi_id) $q->where('observasi.location_id', $lokasi_id);
+
+    $rawData = $q->orderBy('lokasi.kode_lokasi')->get();
+
+    // Hitung IP per observasi
+    $grouped = $rawData->groupBy('observasi_id');
+    $result = [];
+
+    foreach ($grouped as $obs_id => $items) {
+        $first = $items->first();
+
+        // Hitung Ci/Lij untuk setiap parameter
+        $rasio = $items->map(function($item) {
+            return $item->nilai / $item->baku_mutu;
+        });
+
+        $rataRata = $rasio->avg();
+        $maks     = $rasio->max();
+
+        // Rumus IP = √[(rata²  + maks²) / 2]
+        $ip = sqrt(($rataRata * $rataRata + $maks * $maks) / 2);
+        $ip = round($ip, 3);
+
+        // Tentukan status IP
+        if ($ip <= 1.0)      $status = 'Memenuhi Baku Mutu';
+        elseif ($ip <= 5.0)  $status = 'Tercemar Ringan';
+        elseif ($ip <= 10.0) $status = 'Tercemar Sedang';
+        else                 $status = 'Tercemar Berat';
+
+        $result[] = (object)[
+            'kode_lokasi'   => $first->kode_lokasi,
+            'nama_lokasi'   => $first->nama_lokasi,
+            'alamat_lokasi' => $first->alamat_lokasi,
+            'peruntukan'    => $first->peruntukan,
+            'tahun'         => $first->tahun,
+            'periode'       => $first->periode,
+            'jumlah_param'  => $items->count(),
+            'rata_rasio'    => round($rataRata, 4),
+            'maks_rasio'    => round($maks, 4),
+            'nilai_ip'      => $ip,
+            'status'        => $status,
+            'detail'        => $items, 
+        ];
+    }
+
+    // Urutkan dari IP tertinggi
+    usort($result, fn($a, $b) => $b->nilai_ip <=> $a->nilai_ip);
 
     return $result;
 }

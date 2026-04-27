@@ -53,6 +53,15 @@
             background-color: #4e73df;
             border-color: #4e73df;
         }
+
+      
+        .collapse-inner .collapse-item {
+            white-space: normal !important;
+            word-break: break-word;
+            line-height: 1.4;
+            padding-top: 6px;
+            padding-bottom: 6px;
+        }
     </style>
 
     @stack('head')
@@ -69,14 +78,11 @@
                 <!-- Brand -->
                 <a class="sidebar-brand d-flex align-items-center justify-content-center"
                     href="{{ auth()->user()->role === 'petugas' ? route('petugas.dashboard') : route('admin.dashboard') }}">
-
                     <div class="sidebar-brand-icon">
                         <img src="{{ asset('assets/logo-dlh.png') }}" alt="Logo DLH" style="width:46px; height:auto;">
                     </div>
-
                     <div class="sidebar-brand-text mx-3">DLH PROV KALSEL</div>
                 </a>
-
 
                 <hr class="sidebar-divider my-0">
 
@@ -92,148 +98,146 @@
 
                 <hr class="sidebar-divider">
 
-                <!-- ADMIN -->
+                {{-- ===================== ADMIN ===================== --}}
                 @if (auth()->user()->role === 'admin')
-                    <div class="sidebar-heading text-white">DATA MASTER</div>
+                    @php
+                        $isDataMaster =
+                            request()->routeIs('admin.users.*') ||
+                            request()->routeIs('admin.lokasi.*') ||
+                            request()->routeIs('admin.indikator.*') ||
+                            request()->routeIs('admin.observasi.*') ||
+                            request()->routeIs('admin.hasiluji.*');
 
-                    <!-- Pengguna -->
-                    <li class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.users.index') }}">
-                            <i class="fas fa-users"></i>
-                            <span>Pengguna</span>
-                        </a>
-                    </li>
+                        $isLaporan = request()->is('admin/laporan/*');
+                    @endphp
 
-                    <!-- Lokasi -->
-                    <li class="nav-item {{ request()->routeIs('admin.lokasi.*') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.lokasi.index') }}">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>Lokasi</span>
+                    <!-- DATA MASTER -->
+                    <li class="nav-item">
+                        <a class="nav-link {{ $isDataMaster ? '' : 'collapsed' }}" href="#" data-toggle="collapse"
+                            data-target="#collapseDataMaster" aria-expanded="{{ $isDataMaster ? 'true' : 'false' }}"
+                            aria-controls="collapseDataMaster">
+                            <i class="fas fa-database"></i>
+                            <span>Data Master</span>
                         </a>
-                    </li>
-
-                    <!-- Indikator -->
-                    <li class="nav-item {{ request()->routeIs('admin.indikator.*') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.indikator.index') }}">
-                            <i class="fas fa-list"></i>
-                            <span>Parameter</span>
-                        </a>
-                    </li>
-
-                    <!-- Observasi -->
-                    <li class="nav-item {{ request()->routeIs('admin.observasi.*') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.observasi.index') }}">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>Observasi</span>
-                        </a>
-                    </li>
-
-                    <!-- Hasil Uji -->
-                    <li class="nav-item {{ request()->routeIs('admin.hasiluji.*') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.hasiluji.index') }}">
-                            <i class="fas fa-vial"></i>
-                            <span>Hasil Uji</span>
-                        </a>
+                        <div id="collapseDataMaster" class="collapse {{ $isDataMaster ? 'show' : '' }}"
+                            data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Kelola Data:</h6>
+                                <a class="collapse-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
+                                    href="{{ route('admin.users.index') }}">
+                                    <i class="fas fa-users fa-sm mr-2"></i> Pengguna
+                                </a>
+                                <a class="collapse-item {{ request()->routeIs('admin.lokasi.*') ? 'active' : '' }}"
+                                    href="{{ route('admin.lokasi.index') }}">
+                                    <i class="fas fa-map-marker-alt fa-sm mr-2"></i> Lokasi
+                                </a>
+                                <a class="collapse-item {{ request()->routeIs('admin.indikator.*') ? 'active' : '' }}"
+                                    href="{{ route('admin.indikator.index') }}">
+                                    <i class="fas fa-list fa-sm mr-2"></i> Parameter
+                                </a>
+                                <a class="collapse-item {{ request()->routeIs('admin.observasi.*') ? 'active' : '' }}"
+                                    href="{{ route('admin.observasi.index') }}">
+                                    <i class="fas fa-clipboard-list fa-sm mr-2"></i> Observasi
+                                </a>
+                                <a class="collapse-item {{ request()->routeIs('admin.hasiluji.*') ? 'active' : '' }}"
+                                    href="{{ route('admin.hasiluji.index') }}">
+                                    <i class="fas fa-vial fa-sm mr-2"></i> Hasil Uji
+                                </a>
+                            </div>
+                        </div>
                     </li>
 
                     <hr class="sidebar-divider">
 
-                    <!-- =======================
-                                            LAPORAN
-                                        ======================== -->
-                    <div class="sidebar-heading text-white">LAPORAN</div>
-
-                    <!-- Hasil uji per lokasi -->
-                    <li class="nav-item {{ request()->is('admin/laporan/hasil-per-lokasi') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.laporan.show', 'hasil-per-lokasi') }}">
+                    <!-- LAPORAN -->
+                    <li class="nav-item">
+                        <a class="nav-link {{ $isLaporan ? '' : 'collapsed' }}" href="#" data-toggle="collapse"
+                            data-target="#collapseLaporan" aria-expanded="{{ $isLaporan ? 'true' : 'false' }}"
+                            aria-controls="collapseLaporan">
                             <i class="fas fa-file-alt"></i>
-                            <span>Hasil Uji per Lokasi</span>
+                            <span>Laporan</span>
                         </a>
-                    </li>
-
-                    <!-- Rekap tahunan -->
-                    <li class="nav-item {{ request()->is('admin/laporan/rekap-tahunan') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.laporan.show', 'rekap-tahunan') }}">
-                            <i class="fas fa-calendar"></i>
-                            <span>Rekapitulasi Kualitas Air</span>
-                        </a>
-                    </li>
-
-
-                    <!-- Lokasi Rawan Pencemaran -->
-                    <li class="nav-item {{ request()->is('admin/laporan/lokasi-rawan-pencemaran') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.laporan.show', 'lokasi-rawan-pencemaran') }}">
-                            <i class="fas fa-map"></i>
-                            <span>Lokasi Rawan Pencemaran</span>
-                        </a>
-                    </li>
-
-                    <!-- Indikator melebihi baku -->
-                    <li class="nav-item {{ request()->is('admin/laporan/indikator-melebihi-baku') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.laporan.show', 'indikator-melebihi-baku') }}">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <span>Rekap Indikator Melebihi Baku Mutu</span>
-                        </a>
-                    </li>
-
-                    <!-- Status Mutu Air -->
-                    <li class="nav-item {{ request()->is('admin/laporan/status-mutu-air') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.laporan.show', 'status-mutu-air') }}">
-                            <i class="fas fa-water"></i>
-                            <span>Status Mutu Air</span>
-                        </a>
-                    </li>
-
-                    <!-- Parameter Dominan Tercemar -->
-                    <li class="nav-item {{ request()->is('admin/laporan/parameter-dominan') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.laporan.show', 'parameter-dominan') }}">
-                            <i class="fas fa-chart-line"></i>
-                            <span>Parameter Dominan Tercemar</span>
-                        </a>
-                    </li>
-
-                    <!-- Perbandingan Peruntukan -->
-                    <li class="nav-item {{ request()->is('admin/laporan/perbandingan-peruntukan') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.laporan.show', 'perbandingan-peruntukan') }}">
-                            <i class="fas fa-balance-scale"></i>
-                            <span>Perbandingan Peruntukan</span>
-                        </a>
-                    </li>
-
-                    <!-- Perbandingan Peruntukan -->
-                    <li class="nav-item {{ request()->is('admin/laporan/tren-kualitas-air') ? 'active' : '' }}">
-                        <a class="nav-link" href="{{ route('admin.laporan.show', 'tren-kualitas-air') }}">
-                            <i class="fas fa-chart-line"></i>
-                            <span>Tren Kualitas Air</span>
-                        </a>
+                        <div id="collapseLaporan" class="collapse {{ $isLaporan ? 'show' : '' }}"
+                            data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Jenis Laporan:</h6>
+                                <a class="collapse-item {{ request()->is('admin/laporan/hasil-per-lokasi') ? 'active' : '' }}"
+                                    href="{{ route('admin.laporan.show', 'hasil-per-lokasi') }}">
+                                    <i class="fas fa-file-alt fa-sm mr-2"></i> Hasil Uji per Lokasi
+                                </a>
+                                <a class="collapse-item {{ request()->is('admin/laporan/rekap-tahunan') ? 'active' : '' }}"
+                                    href="{{ route('admin.laporan.show', 'rekap-tahunan') }}">
+                                    <i class="fas fa-calendar fa-sm mr-2"></i> Rekapitulasi Kualitas Air
+                                </a>
+                                <a class="collapse-item {{ request()->is('admin/laporan/lokasi-rawan-pencemaran') ? 'active' : '' }}"
+                                    href="{{ route('admin.laporan.show', 'lokasi-rawan-pencemaran') }}">
+                                    <i class="fas fa-map fa-sm mr-2"></i> Lokasi Rawan Pencemaran
+                                </a>
+                                <a class="collapse-item {{ request()->is('admin/laporan/indikator-melebihi-baku') ? 'active' : '' }}"
+                                    href="{{ route('admin.laporan.show', 'indikator-melebihi-baku') }}">
+                                    <i class="fas fa-exclamation-triangle fa-sm mr-2"></i> Indikator Melebihi Baku Mutu
+                                </a>
+                                <a class="collapse-item {{ request()->is('admin/laporan/status-mutu-air') ? 'active' : '' }}"
+                                    href="{{ route('admin.laporan.show', 'status-mutu-air') }}">
+                                    <i class="fas fa-water fa-sm mr-2"></i> Status Mutu Air
+                                </a>
+                                <a class="collapse-item {{ request()->is('admin/laporan/parameter-dominan') ? 'active' : '' }}"
+                                    href="{{ route('admin.laporan.show', 'parameter-dominan') }}">
+                                    <i class="fas fa-chart-bar fa-sm mr-2"></i> Parameter Dominan Tercemar
+                                </a>
+                                <a class="collapse-item {{ request()->is('admin/laporan/perbandingan-peruntukan') ? 'active' : '' }}"
+                                    href="{{ route('admin.laporan.show', 'perbandingan-peruntukan') }}">
+                                    <i class="fas fa-balance-scale fa-sm mr-2"></i> Perbandingan Peruntukan
+                                </a>
+                                <a class="collapse-item {{ request()->is('admin/laporan/tren-kualitas-air') ? 'active' : '' }}"
+                                    href="{{ route('admin.laporan.show', 'tren-kualitas-air') }}">
+                                    <i class="fas fa-chart-line fa-sm mr-2"></i> Tren Kualitas Air
+                                </a>
+                                <a class="collapse-item {{ request()->is('admin/laporan/indeks-pencemaran') ? 'active' : '' }}"
+                                    href="{{ route('admin.laporan.show', 'indeks-pencemaran') }}">
+                                    <i class="fas fa-flask fa-sm mr-2"></i> Indeks Pencemaran (IP)
+                                </a>
+                            </div>
+                        </div>
                     </li>
 
                     <hr class="sidebar-divider d-none d-md-block">
                 @endif
 
-                <!-- PETUGAS -->
+                {{-- ===================== PETUGAS ===================== --}}
                 @if (auth()->user()->role === 'petugas')
-                    <hr class="sidebar-divider">
-                    <div class="sidebar-heading text-white">DATA MASTER</div>
-                    {{-- Data Observasi --}}
-                    <li class="nav-item @if (request()->routeIs('petugas.observasi.*')) active @endif">
-                        <a class="nav-link" href="{{ route('petugas.observasi.index') }}">
-                            <i class="fas fa-clipboard-list"></i>
-                            <span>Observasi</span>
-                        </a>
-                    </li>
+                    @php
+                        $isPetugasMaster =
+                            request()->routeIs('petugas.observasi.*') || request()->routeIs('petugas.hasiluji.*');
+                    @endphp
 
-                    {{-- Hasil Uji --}}
-                    <li class="nav-item @if (request()->routeIs('petugas.hasiluji.*')) active @endif">
-                        <a class="nav-link" href="{{ route('petugas.hasiluji.index') }}">
-                            <i class="fas fa-vial"></i>
-                            <span>Hasil Uji</span>
+                    <!-- DATA MASTER PETUGAS -->
+                    <li class="nav-item">
+                        <a class="nav-link {{ $isPetugasMaster ? '' : 'collapsed' }}" href="#"
+                            data-toggle="collapse" data-target="#collapsePetugasMaster"
+                            aria-expanded="{{ $isPetugasMaster ? 'true' : 'false' }}"
+                            aria-controls="collapsePetugasMaster">
+                            <i class="fas fa-database"></i>
+                            <span>Data Master</span>
                         </a>
+                        <div id="collapsePetugasMaster" class="collapse {{ $isPetugasMaster ? 'show' : '' }}"
+                            data-parent="#accordionSidebar">
+                            <div class="bg-white py-2 collapse-inner rounded">
+                                <h6 class="collapse-header">Kelola Data:</h6>
+                                <a class="collapse-item {{ request()->routeIs('petugas.observasi.*') ? 'active' : '' }}"
+                                    href="{{ route('petugas.observasi.index') }}">
+                                    <i class="fas fa-clipboard-list fa-sm mr-2"></i> Observasi
+                                </a>
+                                <a class="collapse-item {{ request()->routeIs('petugas.hasiluji.*') ? 'active' : '' }}"
+                                    href="{{ route('petugas.hasiluji.index') }}">
+                                    <i class="fas fa-vial fa-sm mr-2"></i> Hasil Uji
+                                </a>
+                            </div>
+                        </div>
                     </li>
 
                     <hr class="sidebar-divider">
                 @endif
-
 
             </ul>
         @endauth

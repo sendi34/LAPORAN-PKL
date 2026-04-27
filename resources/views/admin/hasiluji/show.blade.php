@@ -66,6 +66,8 @@
                                     <span class="badge bg-warning text-dark">Tercemar Ringan</span>
                                 @elseif ($hasil->status == 'Tercemar Berat')
                                     <span class="badge bg-danger text-white">Tercemar Berat</span>
+                                @else
+                                    <span class="badge bg-secondary text-white">Tidak Ada Baku Mutu</span>
                                 @endif
                             </td>
                         </tr>

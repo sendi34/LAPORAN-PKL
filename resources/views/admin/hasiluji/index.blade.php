@@ -77,7 +77,8 @@
                                             @foreach ($items as $hu)
                                                 <tr>
                                                     <td>{{ $hu->indikator->nama_indikator }}</td>
-                                                    <td>{{ rtrim(rtrim(number_format($hu->nilai, 4, '.', ''), '0'), '.') }}</td>
+                                                    <td>{{ rtrim(rtrim(number_format($hu->nilai, 4, '.', ''), '0'), '.') }}
+                                                    </td>
                                                     <td>{{ rtrim(rtrim(number_format($hu->baku_mutu, 4, '.', ''), '0'), '.') }}
                                                     </td>
                                                     <td>
@@ -87,6 +88,9 @@
                                                             <span class="badge bg-warning text-white">Tercemar Ringan</span>
                                                         @elseif ($hu->status == 'Tercemar Berat')
                                                             <span class="badge bg-danger text-white">Tercemar Berat</span>
+                                                        @else
+                                                            <span class="badge bg-secondary text-white">Tidak Ada Baku
+                                                                Mutu</span>
                                                         @endif
                                                     </td>
                                                 </tr>
