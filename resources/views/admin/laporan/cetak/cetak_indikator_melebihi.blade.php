@@ -109,7 +109,7 @@
         <div class="clear"></div>
     </div>
     <h3 style="text-align:center; margin-top:15px;">
-        LAPORAN REKAP INDIKATOR MELEBIHI BAKU MUTU
+        LAPORAN REKAP PARAMETER MELEBIHI BAKU MUTU
     </h3>
     <table>
         <thead>

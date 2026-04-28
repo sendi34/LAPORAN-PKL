@@ -84,13 +84,15 @@
 <body>
 
     <!-- KOP -->
+    <!-- KOP SURAT -->
     <div class="kop-container">
-        <img src="{{ public_path('logo-dlh.png') }}" class="kop-logo">
+        <img src="{{ public_path('logo-dlh.png') }}" class="kop-logo" alt="Logo DLH">
         <div class="kop-text">
             <strong>PEMERINTAH PROVINSI KALIMANTAN SELATAN</strong><br>
             <strong>DINAS LINGKUNGAN HIDUP</strong><br>
-            Jalan Bangun Praja, Kel. Palam, Kec. Cempaka, Banjarbaru<br>
-            Telp: 0511-6749-241
+            Jalan Bangun Praja, Kel. Palam, Kec. Cempaka, Banjarbaru, Kalimantan Selatan 70732 <br> (Kawasan Perkantoran
+            Pemerintah Provinsi Kalimantan Selatan) <br>
+            Telp/Faks: 0511-6749-241; Laman: www.dlh.kalselprov.go.id; Pos-el : blhdkalsel@gmail.com
         </div>
         <div class="clear"></div>
     </div>

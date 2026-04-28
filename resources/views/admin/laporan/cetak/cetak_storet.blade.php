@@ -9,8 +9,7 @@
 
         body {
             font-family: "Times New Roman", serif;
-            font-size: 13px;
-            margin: 20px 40px;
+            font-size: 12px;
         }
 
         .kop-container {
@@ -18,7 +17,7 @@
             text-align: center;
             border-bottom: 3px solid #000;
             padding-bottom: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .kop-logo {
@@ -46,7 +45,6 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            font-size: 12px;
         }
 
         table, th, td {
@@ -62,13 +60,8 @@
             text-align: center;
         }
 
-        td.text-left {
-            text-align: left;
-        }
-
-        .footer-ttd {
-            width: 100%;
-            margin-top: 50px;
+        .footer {
+            margin-top: 40px;
             text-align: right;
         }
     </style>
@@ -76,7 +69,7 @@
 
 <body>
 
-    <!-- KOP SURAT -->
+<!-- KOP SURAT -->
     <div class="kop-container">
         <img src="{{ public_path('logo-dlh.png') }}" class="kop-logo" alt="Logo DLH">
         <div class="kop-text">
@@ -89,46 +82,51 @@
         <div class="clear"></div>
     </div>
 
-    <!-- JUDUL -->
-    <h3 style="text-align:center;">
-        LAPORAN PERBANDINGAN PERUNTUKAN 
-    </h3>
+<h3 class="title">
+    LAPORAN METODE STORET
+</h3>
 
-    <!-- TABEL -->
-    <table>
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Peruntukan</th>
-                <th>Jumlah Data</th>
-                <th>Rata Nilai</th>
-                <th>Jumlah Melampaui</th>
-                <th>% Pelanggaran</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($data as $i => $row)
-            <tr>
-                <td>{{ $i+1 }}</td>
-                <td class="text-left">{{ $row->peruntukan }}</td>
-                <td>{{ $row->jumlah_data }}</td>
-                <td>{{ number_format($row->rata_nilai,2) }}</td>
-                <td>{{ $row->jumlah_melampaui }}</td>
-                <td>{{ $row->persen_pelanggaran }} %</td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+<table>
+    <thead>
+        <tr>
+            <th>No</th>
+            <th>Kode Lokasi</th>
+            <th>Alamat</th>
+            <th>Tahun - Periode</th>
+            <th>Jumlah Parameter</th>
+            <th>Jumlah Melanggar</th>
+            <th>Skor STORET</th>
+            <th>Kelas</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($data as $i => $row)
+        <tr>
+            <td>{{ $i+1 }}</td>
+            <td>{{ $row->kode_lokasi }}</td>
+            <td>{{ $row->alamat_lokasi }}</td>
+            <td>{{ $row->tahun }} - {{ $row->periode == 1 ? 'I' : 'II' }}</td>
+            <td>{{ $row->jumlah_parameter }}</td>
+            <td>{{ $row->jumlah_melanggar }}</td>
+            <td>{{ $row->skor_storet }}</td>
+            <td>{{ $row->kelas }}</td>
+            <td><strong>{{ $row->status }}</strong></td>
+        </tr>
+        @endforeach
+    </tbody>
+</table>
 
-    <!-- TTD -->
-    <div class="footer-ttd">
-        <p>Banjarbaru, {{ now()->translatedFormat('d F Y') }}</p>
-        <p>Kepala Dinas Lingkungan Hidup,</p>
-        <br><br><br><br>
-        <strong><u>Rahmat Prapto Udoyo, S.Hut, MP</u></strong><br>
-        Pembina Utama Muda (IV/c)<br>
-        NIP. 19691212 199212 1 004
-    </div>
+<div class="footer">
+    <p>Banjarbaru, {{ now()->translatedFormat('d F Y') }}</p>
+    <p>Kepala Dinas Lingkungan Hidup,</p>
+
+    <br><br><br>
+
+    <strong><u>Rahmat Prapto Udoyo, S.Hut, MP</u></strong><br>
+    Pembina Utama Muda (IV/c)<br>
+    NIP. 19691212 199212 1 004
+</div>
 
 </body>
 </html>

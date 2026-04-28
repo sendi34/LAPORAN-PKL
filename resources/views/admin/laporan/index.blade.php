@@ -274,64 +274,153 @@
 
     {{-- FILTER KHUSUS LAPORAN TRN KUALITAS AIR --}}
     @if ($jenis == 'tren-kualitas-air')
-    <div class="card mb-3">
-        <div class="card-body">
-            <form method="GET">
-                <div class="row">
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="GET">
+                    <div class="row">
 
-                    {{-- TAHUN AWAL --}}
-                    <div class="col-md-3">
-                        <label>Tahun Awal</label>
-                        <input type="number" name="tahun_awal" class="form-control"
-                            value="{{ request('tahun_awal') }}">
+                        {{-- TAHUN AWAL --}}
+                        <div class="col-md-3">
+                            <label>Tahun Awal</label>
+                            <input type="number" name="tahun_awal" class="form-control"
+                                value="{{ request('tahun_awal') }}">
+                        </div>
+
+                        {{-- TAHUN AKHIR --}}
+                        <div class="col-md-3">
+                            <label>Tahun Akhir</label>
+                            <input type="number" name="tahun_akhir" class="form-control"
+                                value="{{ request('tahun_akhir') }}">
+                        </div>
+
+                        {{-- PARAMETER --}}
+                        <div class="col-md-3">
+                            <label>Parameter</label>
+                            <select name="indikator_id" class="form-control">
+                                <option value="">-- Semua Parameter --</option>
+                                @foreach (\App\Models\IndikatorUji::orderBy('nama_indikator')->get() as $ind)
+                                    <option value="{{ $ind->id }}"
+                                        {{ request('indikator_id') == $ind->id ? 'selected' : '' }}>
+                                        {{ $ind->nama_indikator }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- LOKASI --}}
+                        <div class="col-md-3">
+                            <label>Lokasi</label>
+                            <select name="lokasi_id" class="form-control">
+                                <option value="">-- Semua Lokasi --</option>
+                                @foreach (\App\Models\Lokasi::orderBy('kode_lokasi')->get() as $l)
+                                    <option value="{{ $l->id }}"
+                                        {{ request('lokasi_id') == $l->id ? 'selected' : '' }}>
+                                        {{ $l->kode_lokasi }} - {{ $l->nama_lokasi }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- BUTTON --}}
+                        <div class="col-md-3">
+                            <label>&nbsp;</label><br>
+                            <button class="btn btn-primary">Tampilkan</button>
+                        </div>
+
                     </div>
-
-                    {{-- TAHUN AKHIR --}}
-                    <div class="col-md-3">
-                        <label>Tahun Akhir</label>
-                        <input type="number" name="tahun_akhir" class="form-control"
-                            value="{{ request('tahun_akhir') }}">
-                    </div>
-
-                    {{-- PARAMETER --}}
-                    <div class="col-md-3">
-                        <label>Parameter</label>
-                        <select name="indikator_id" class="form-control">
-                            <option value="">-- Semua Parameter --</option>
-                            @foreach (\App\Models\IndikatorUji::orderBy('nama_indikator')->get() as $ind)
-                                <option value="{{ $ind->id }}"
-                                    {{ request('indikator_id') == $ind->id ? 'selected' : '' }}>
-                                    {{ $ind->nama_indikator }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- LOKASI --}}
-                    <div class="col-md-3">
-                        <label>Lokasi</label>
-                        <select name="lokasi_id" class="form-control">
-                            <option value="">-- Semua Lokasi --</option>
-                            @foreach (\App\Models\Lokasi::orderBy('kode_lokasi')->get() as $l)
-                                <option value="{{ $l->id }}"
-                                    {{ request('lokasi_id') == $l->id ? 'selected' : '' }}>
-                                    {{ $l->kode_lokasi }} - {{ $l->nama_lokasi }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- BUTTON --}}
-                    <div class="col-md-3">
-                        <label>&nbsp;</label><br>
-                        <button class="btn btn-primary">Tampilkan</button>
-                    </div>
-
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
-    </div>
-@endif
+    @endif
+
+    {{-- FILTER KHUSUS LAPORAN INDEKS PENCEMARAN --}}
+    @if ($jenis == 'indeks-pencemaran')
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="GET">
+                    <div class="row">
+
+                        <div class="col-md-3">
+                            <label>Lokasi</label>
+                            <select name="lokasi_id" class="form-control">
+                                <option value="">-- Semua Lokasi --</option>
+                                @foreach (\App\Models\Lokasi::orderBy('kode_lokasi')->get() as $l)
+                                    <option value="{{ $l->id }}"
+                                        {{ request('lokasi_id') == $l->id ? 'selected' : '' }}>
+                                        {{ $l->kode_lokasi }} - {{ $l->nama_lokasi }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Tahun Pemantauan</label>
+                            <input type="number" name="tahun" class="form-control" value="{{ request('tahun') }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Periode Pemantauan</label>
+                            <select name="periode" class="form-control">
+                                <option value="">-- Semua Periode --</option>
+                                <option value="1" {{ request('periode') == 1 ? 'selected' : '' }}>Periode I</option>
+                                <option value="2" {{ request('periode') == 2 ? 'selected' : '' }}>Periode II</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>&nbsp;</label><br>
+                            <button class="btn btn-primary">Tampilkan</button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+    {{-- FILTER KHUSUS LAPORAN STORET --}}
+    @if ($jenis == 'storet')
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="GET">
+                    <div class="row">
+
+                        <div class="col-md-3">
+                            <label>Lokasi</label>
+                            <select name="lokasi_id" class="form-control">
+                                <option value="">-- Semua Lokasi --</option>
+                                @foreach (\App\Models\Lokasi::orderBy('kode_lokasi')->get() as $l)
+                                    <option value="{{ $l->id }}"
+                                        {{ request('lokasi_id') == $l->id ? 'selected' : '' }}>
+                                        {{ $l->kode_lokasi }} - {{ $l->nama_lokasi }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Tahun Pemantauan</label>
+                            <input type="number" name="tahun" class="form-control" value="{{ request('tahun') }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>Periode Pemantauan</label>
+                            <select name="periode" class="form-control">
+                                <option value="">-- Semua Periode --</option>
+                                <option value="1" {{ request('periode') == 1 ? 'selected' : '' }}>Periode I</option>
+                                <option value="2" {{ request('periode') == 2 ? 'selected' : '' }}>Periode II</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-3">
+                            <label>&nbsp;</label><br>
+                            <button class="btn btn-primary">Tampilkan</button>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
 
     {{-- TOMBOL CETAK - CARA SEDERHANA DENGAN LINK LANGSUNG --}}
     <a href="{{ route('admin.laporan.cetak', $jenis) }}?{{ http_build_query(request()->query()) }}"

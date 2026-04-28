@@ -57,7 +57,7 @@ class LaporanController extends Controller
                 $periode = $request->query('periode');
                 $indikator_id = $request->query('indikator_id'); // TAMBAHKAN INI
                 $data = $this->laporanIndikatorMelebihiBaku($tahun, $lokasi_id, $periode, $indikator_id);
-                $title = "Laporan Indikator Melebihi Baku Mutu";
+                $title = "Laporan Parameter Melebihi Baku Mutu";
                 if ($tahun) {
                     $title .= " Tahun " . $tahun;
                 }
@@ -112,12 +112,25 @@ class LaporanController extends Controller
                 break;
 
             case 'indeks-pencemaran':
-                $tahun     = $request->query('tahun');
-                $periode   = $request->query('periode');
+                $tahun = $request->query('tahun');
+                $periode = $request->query('periode');
                 $lokasi_id = $request->query('lokasi_id');
-                $data  = $this->laporanIndeksPencemaran($tahun, $periode, $lokasi_id);
-                $title = "Laporan Indeks Pencemaran Air Laut";
+
+                $data = $this->laporanIndeksPencemaran($tahun, $periode, $lokasi_id);
+
+                $title = "Laporan Indeks Pencemaran";
                 $viewCetak = 'admin.laporan.cetak.cetak_indeks_pencemaran';
+                break;
+
+            case 'storet':
+                $tahun = $request->query('tahun');
+                $periode = $request->query('periode');
+                $lokasi_id = $request->query('lokasi_id');
+
+                $data = $this->laporanStoret($tahun, $periode, $lokasi_id);
+
+                $title = "Laporan Metode STORET";
+                $viewCetak = 'admin.laporan.cetak.cetak_storet';
                 break;
 
             default:
@@ -267,14 +280,43 @@ class LaporanController extends Controller
                 break;
 
             case 'indeks-pencemaran':
-                $tahun     = $request->query('tahun');
-                $periode   = $request->query('periode');
+                $tahun = $request->query('tahun');
+                $periode = $request->query('periode');
                 $lokasi_id = $request->query('lokasi_id');
-                $data  = $this->laporanIndeksPencemaran($tahun, $periode, $lokasi_id);
-                $title = "Laporan Indeks Pencemaran Air Laut";
-                if ($tahun)  $title .= " Tahun " . $tahun;
-                if ($periode) $title .= " Periode " . ($periode == 1 ? 'I' : 'II');
-                $view  = 'admin.laporan.cetak.cetak_indeks_pencemaran';
+
+                $data = $this->laporanIndeksPencemaran($tahun, $periode, $lokasi_id);
+
+                $title = "Laporan Indeks Pencemaran";
+
+                if ($tahun) {
+                    $title .= " Tahun " . $tahun;
+                }
+
+                if ($periode) {
+                    $title .= " Periode " . ($periode == 1 ? 'I' : 'II');
+                }
+
+                $view = 'admin.laporan.cetak.cetak_indeks_pencemaran';
+                break;
+
+            case 'storet':
+                $tahun = $request->query('tahun');
+                $periode = $request->query('periode');
+                $lokasi_id = $request->query('lokasi_id');
+
+                $data = $this->laporanStoret($tahun, $periode, $lokasi_id);
+
+                $title = "Laporan Metode STORET";
+
+                if ($tahun) {
+                    $title .= " Tahun " . $tahun;
+                }
+
+                if ($periode) {
+                    $title .= " Periode " . ($periode == 1 ? 'I' : 'II');
+                }
+
+                $view = 'admin.laporan.cetak.cetak_storet';
                 break;
 
             default:
@@ -653,28 +695,109 @@ private function laporanTrenKualitasAir(
 }
 
 // ============================================================
-// 9. LAPORAN INDEKS PENCEMARAN (IP) - Kepmen LH No.115/2003
-// ============================================================
+    // 9. LAPORAN METODE INDEKS PENCEMARAN
+    // ============================================================
 private function laporanIndeksPencemaran($tahun = null, $periode = null, $lokasi_id = null)
+{
+    $data = DB::table('hasil_uji')
+        ->join('observasi', 'hasil_uji.observasi_id', '=', 'observasi.id')
+        ->join('lokasi', 'lokasi.id', '=', 'observasi.location_id')
+        ->select(
+            'lokasi.id as lokasi_id',
+            'lokasi.kode_lokasi',
+            'lokasi.alamat_lokasi',
+            'observasi.tahun_pemantauan as tahun',
+            'observasi.periode_pemantauan as periode',
+            'hasil_uji.baku_mutu', 
+            DB::raw('(hasil_uji.nilai / hasil_uji.baku_mutu) as ci_lij')
+        );
+
+    if ($tahun) {
+        $data->where('observasi.tahun_pemantauan', $tahun);
+    }
+
+    if ($periode) {
+        $data->where('observasi.periode_pemantauan', $periode);
+    }
+
+    if ($lokasi_id) {
+    $data->where('observasi.location_id', $lokasi_id);
+    }
+
+    $data = $data->get();
+
+    // GROUP PER LOKASI
+   $grouped = $data->groupBy(function ($item) {
+    return $item->lokasi_id . '-' . $item->tahun . '-' . $item->periode;
+});
+
+    $result = [];
+
+    foreach ($grouped as $lokasi_id => $rows) {
+
+        $ci_values = [];
+
+        foreach ($rows as $row) {
+            if ($row->baku_mutu > 0) {
+                $ci_values[] = $row->ci_lij;
+            }
+        }
+
+        if (count($ci_values) == 0) continue;
+
+        $rata = array_sum($ci_values) / count($ci_values);
+        $max  = max($ci_values);
+
+        // RUMUS PI
+        $pi = sqrt((pow($max, 2) + pow($rata, 2)) / 2);
+
+        // STATUS
+        if ($pi <= 1) {
+            $status = 'Memenuhi Baku Mutu';
+        } elseif ($pi <= 5) {
+            $status = 'Tercemar Ringan';
+        } elseif ($pi <= 10) {
+            $status = 'Tercemar Sedang';
+        } else {
+            $status = 'Tercemar Berat';
+        }
+
+        $first = $rows->first();
+
+        $result[] = (object)[
+            'kode_lokasi' => $first->kode_lokasi,
+            'alamat_lokasi' => $first->alamat_lokasi,
+            'tahun' => $first->tahun,
+            'periode' => $first->periode,
+            'rata_ci_lij' => round($rata, 3),
+            'max_ci_lij' => round($max, 3),
+            'nilai_pi' => round($pi, 3),
+            'status' => $status
+        ];
+    }
+
+    return collect($result)->sortByDesc('nilai_pi')->values();
+}
+// ============================================================
+    // 10. LAPORAN METODE STORET
+    // ============================================================
+private function laporanStoret($tahun = null, $periode = null, $lokasi_id = null)
 {
     $q = DB::table('hasil_uji')
         ->join('observasi', 'hasil_uji.observasi_id', '=', 'observasi.id')
         ->join('lokasi', 'lokasi.id', '=', 'observasi.location_id')
         ->join('indikator_uji', 'indikator_uji.id', '=', 'hasil_uji.indikator_id')
         ->select(
+            'lokasi.id as lokasi_id',
             'lokasi.kode_lokasi',
-            'lokasi.nama_lokasi',
             'lokasi.alamat_lokasi',
-            'lokasi.peruntukan',
-            'observasi.id as observasi_id',
             'observasi.tahun_pemantauan as tahun',
             'observasi.periode_pemantauan as periode',
-            'indikator_uji.nama_indikator as parameter',
             'hasil_uji.nilai',
-            'hasil_uji.baku_mutu'
+            'hasil_uji.baku_mutu',
+            'indikator_uji.nama_indikator as parameter'
         )
         ->whereNotNull('hasil_uji.baku_mutu')
-        ->whereNotNull('hasil_uji.nilai')
         ->where('hasil_uji.baku_mutu', '>', 0);
 
     if ($tahun)     $q->where('observasi.tahun_pemantauan', $tahun);
@@ -683,50 +806,62 @@ private function laporanIndeksPencemaran($tahun = null, $periode = null, $lokasi
 
     $rawData = $q->orderBy('lokasi.kode_lokasi')->get();
 
-    // Hitung IP per observasi
-    $grouped = $rawData->groupBy('observasi_id');
+    // GROUP per lokasi + tahun + periode
+    $grouped = $rawData->groupBy(function ($item) {
+        return $item->lokasi_id . '-' . $item->tahun . '-' . $item->periode;
+    });
+
     $result = [];
 
-    foreach ($grouped as $obs_id => $items) {
-        $first = $items->first();
+    foreach ($grouped as $key => $rows) {
+        $first         = $rows->first();
+        $skor          = 0;
+        $jumlah_melanggar = 0;
 
-        // Hitung Ci/Lij untuk setiap parameter
-        $rasio = $items->map(function($item) {
-            return $item->nilai / $item->baku_mutu;
-        });
+        $jumlah_data = $rows->count();
 
-        $rataRata = $rasio->avg();
-        $maks     = $rasio->max();
+foreach ($rows as $row) {
+    if ($row->nilai > $row->baku_mutu) {
 
-        // Rumus IP = √[(rata²  + maks²) / 2]
-        $ip = sqrt(($rataRata * $rataRata + $maks * $maks) / 2);
-        $ip = round($ip, 3);
+        // SESUAI KEPMEN LH 115/2003
+        if ($jumlah_data < 10) {
+            $skor -= 2; 
+        } else {
+            $skor -= 4; 
+        }
 
-        // Tentukan status IP
-        if ($ip <= 1.0)      $status = 'Memenuhi Baku Mutu';
-        elseif ($ip <= 5.0)  $status = 'Tercemar Ringan';
-        elseif ($ip <= 10.0) $status = 'Tercemar Sedang';
-        else                 $status = 'Tercemar Berat';
+        $jumlah_melanggar++;
+    }
+}
+
+        // Kelas STORET sesuai Kepmen LH No.115/2003
+        if ($skor == 0) {
+            $kelas  = 'A';
+            $status = 'Memenuhi Baku Mutu';
+        } elseif ($skor >= -10) {
+            $kelas  = 'B';
+            $status = 'Tercemar Ringan';
+        } elseif ($skor >= -30) {
+            $kelas  = 'C';
+            $status = 'Tercemar Sedang';
+        } else {
+            $kelas  = 'D';
+            $status = 'Tercemar Berat';
+        }
 
         $result[] = (object)[
-            'kode_lokasi'   => $first->kode_lokasi,
-            'nama_lokasi'   => $first->nama_lokasi,
-            'alamat_lokasi' => $first->alamat_lokasi,
-            'peruntukan'    => $first->peruntukan,
-            'tahun'         => $first->tahun,
-            'periode'       => $first->periode,
-            'jumlah_param'  => $items->count(),
-            'rata_rasio'    => round($rataRata, 4),
-            'maks_rasio'    => round($maks, 4),
-            'nilai_ip'      => $ip,
-            'status'        => $status,
-            'detail'        => $items, 
+            'kode_lokasi'      => $first->kode_lokasi,
+            'alamat_lokasi'    => $first->alamat_lokasi,
+            'tahun'            => $first->tahun,
+            'periode'          => $first->periode,
+            'jumlah_parameter' => $rows->count(),
+            'jumlah_melanggar' => $jumlah_melanggar,
+            'skor_storet'      => $skor,
+            'kelas'            => $kelas,
+            'status'           => $status,
         ];
     }
 
-    // Urutkan dari IP tertinggi
-    usort($result, fn($a, $b) => $b->nilai_ip <=> $a->nilai_ip);
-
-    return $result;
+    return collect($result)->sortBy('skor_storet')->values();
 }
 }

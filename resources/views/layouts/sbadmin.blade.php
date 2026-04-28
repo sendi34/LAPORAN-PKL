@@ -54,7 +54,7 @@
             border-color: #4e73df;
         }
 
-      
+
         .collapse-inner .collapse-item {
             white-space: normal !important;
             word-break: break-word;
@@ -175,7 +175,7 @@
                                 </a>
                                 <a class="collapse-item {{ request()->is('admin/laporan/indikator-melebihi-baku') ? 'active' : '' }}"
                                     href="{{ route('admin.laporan.show', 'indikator-melebihi-baku') }}">
-                                    <i class="fas fa-exclamation-triangle fa-sm mr-2"></i> Indikator Melebihi Baku Mutu
+                                    <i class="fas fa-exclamation-triangle fa-sm mr-2"></i> Parameter Melebihi Baku Mutu
                                 </a>
                                 <a class="collapse-item {{ request()->is('admin/laporan/status-mutu-air') ? 'active' : '' }}"
                                     href="{{ route('admin.laporan.show', 'status-mutu-air') }}">
@@ -193,9 +193,13 @@
                                     href="{{ route('admin.laporan.show', 'tren-kualitas-air') }}">
                                     <i class="fas fa-chart-line fa-sm mr-2"></i> Tren Kualitas Air
                                 </a>
+                                <a class="collapse-item {{ request()->is('admin/laporan/storet') ? 'active' : '' }}"
+                                    href="{{ route('admin.laporan.show', 'storet') }}">
+                                    <i class="fas fa-calculator fa-sm mr-2"></i> Metode STORET
+                                </a>
                                 <a class="collapse-item {{ request()->is('admin/laporan/indeks-pencemaran') ? 'active' : '' }}"
                                     href="{{ route('admin.laporan.show', 'indeks-pencemaran') }}">
-                                    <i class="fas fa-flask fa-sm mr-2"></i> Indeks Pencemaran (IP)
+                                    <i class="fas fa-flask fa-sm mr-2"></i>Metode Indeks Pencemaran (IP)
                                 </a>
                             </div>
                         </div>
