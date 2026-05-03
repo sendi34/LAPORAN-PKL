@@ -64,6 +64,8 @@
                                     <span class="badge bg-success text-white">Memenuhi</span>
                                 @elseif ($hasil->status == 'Tercemar Ringan')
                                     <span class="badge bg-warning text-dark">Tercemar Ringan</span>
+                                @elseif ($hasil->status == 'Tercemar Sedang')
+                                    <span class="badge bg-orange text-white" style="background-color:#f97316!important">Tercemar Sedang</span>
                                 @elseif ($hasil->status == 'Tercemar Berat')
                                     <span class="badge bg-danger text-white">Tercemar Berat</span>
                                 @else

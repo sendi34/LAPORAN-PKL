@@ -17,6 +17,9 @@ class DashboardController extends Controller
         $tahun   = $request->query('tahun', date('Y'));
         $periode = $request->query('periode');
 
+        $daftarLokasi    = DB::table('lokasi')->orderBy('kode_lokasi')->get();
+        $daftarIndikator = DB::table('indikator_uji')->orderBy('nama_indikator')->get();
+
         // ── STORET ──
         $dataStoret = $this->hitungStoret($tahun, $periode);
         $storet = [
@@ -99,6 +102,8 @@ class DashboardController extends Controller
             ->limit(5)->get();
 
         return view('admin.dashboard', compact(
+            'daftarLokasi',
+            'daftarIndikator',
             'tahun', 'periode',
             'obsPerLokasi', 'lokasiMap',
             'totalLokasi', 'totalPetugas', 'totalIndikator', 'totalObservasi',

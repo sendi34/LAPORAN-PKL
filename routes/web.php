@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\AiDashboardController;
 
 // Auth Controllers
 use App\Http\Controllers\Auth\LoginController;
@@ -63,13 +64,11 @@ Route::get('/', function () {
 })->name('home');
 
 
-
 /*
 |--------------------------------------------------------------------------
 | ROUTE PROTEKSI AUTH
 |--------------------------------------------------------------------------
 */
-
 Route::middleware(['auth'])->group(function () {
 
     /*
@@ -93,6 +92,13 @@ Route::middleware(['auth'])->group(function () {
         ->group(function () {
 
             Route::get('dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
+
+            // ── AI ENDPOINTS ──
+            Route::prefix('ai')->group(function () {
+                Route::get('/forecast',    [AiDashboardController::class, 'forecast']);
+                Route::get('/correlation', [AiDashboardController::class, 'correlation']);
+                Route::get('/recommend',   [AiDashboardController::class, 'recommend']);
+            });
 
             Route::resource('users', UserController::class);
             Route::resource('lokasi', LokasiController::class);
@@ -122,5 +128,8 @@ Route::middleware(['auth'])->group(function () {
         });
 });
 
+Route::get('/test-gemini-key', function() {
+    return config('services.gemini.key');
+});
 // Matikan route bawaan Breeze
 // require __DIR__.'/auth.php';

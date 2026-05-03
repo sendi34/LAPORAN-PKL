@@ -81,12 +81,13 @@
                                                         @if ($hu->status == 'Memenuhi Baku Mutu')
                                                             <span class="badge bg-success text-white">Memenuhi</span>
                                                         @elseif ($hu->status == 'Tercemar Ringan')
-                                                            <span class="badge bg-warning text-white">Tercemar Ringan</span>
+                                                            <span class="badge bg-warning text-dark">Tercemar Ringan</span>
+                                                        @elseif ($hu->status == 'Tercemar Sedang')
+                                                            <span class="badge bg-orange text-white" style="background-color:#f97316!important">Tercemar Sedang</span>
                                                         @elseif ($hu->status == 'Tercemar Berat')
                                                             <span class="badge bg-danger text-white">Tercemar Berat</span>
                                                         @else
-                                                            <span class="badge bg-secondary text-white">Tidak Ada Baku
-                                                                Mutu</span>
+                                                            <span class="badge bg-secondary text-white">Tidak Ada Baku Mutu</span>
                                                         @endif
                                                     </td>
                                                 </tr>
