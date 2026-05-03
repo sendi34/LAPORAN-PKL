@@ -806,7 +806,6 @@ private function laporanStoret($tahun = null, $periode = null, $lokasi_id = null
 
     $rawData = $q->orderBy('lokasi.kode_lokasi')->get();
 
-    // GROUP per lokasi + tahun + periode
     $grouped = $rawData->groupBy(function ($item) {
         return $item->lokasi_id . '-' . $item->tahun . '-' . $item->periode;
     });
@@ -814,40 +813,23 @@ private function laporanStoret($tahun = null, $periode = null, $lokasi_id = null
     $result = [];
 
     foreach ($grouped as $key => $rows) {
-        $first         = $rows->first();
-        $skor          = 0;
+        $first            = $rows->first();
+        $skor             = 0;
         $jumlah_melanggar = 0;
+        $jumlah_data      = $rows->count();
 
-        $jumlah_data = $rows->count();
-
-foreach ($rows as $row) {
-    if ($row->nilai > $row->baku_mutu) {
-
-        // SESUAI KEPMEN LH 115/2003
-        if ($jumlah_data < 10) {
-            $skor -= 2; 
-        } else {
-            $skor -= 4; 
+        foreach ($rows as $row) {
+            if ($row->nilai > $row->baku_mutu) {
+                // Kimia, Kepmen LH 115/2003
+                $skor -= ($jumlah_data < 10) ? 2 : 4;
+                $jumlah_melanggar++;
+            }
         }
 
-        $jumlah_melanggar++;
-    }
-}
-
-        // Kelas STORET sesuai Kepmen LH No.115/2003
-        if ($skor == 0) {
-            $kelas  = 'A';
-            $status = 'Memenuhi Baku Mutu';
-        } elseif ($skor >= -10) {
-            $kelas  = 'B';
-            $status = 'Tercemar Ringan';
-        } elseif ($skor >= -30) {
-            $kelas  = 'C';
-            $status = 'Tercemar Sedang';
-        } else {
-            $kelas  = 'D';
-            $status = 'Tercemar Berat';
-        }
+        if ($skor == 0)        { $kelas = 'A'; $status = 'Memenuhi Baku Mutu'; }
+        elseif ($skor >= -10)  { $kelas = 'B'; $status = 'Tercemar Ringan'; }
+        elseif ($skor >= -30)  { $kelas = 'C'; $status = 'Tercemar Sedang'; }
+        else                   { $kelas = 'D'; $status = 'Tercemar Berat'; }
 
         $result[] = (object)[
             'kode_lokasi'      => $first->kode_lokasi,
