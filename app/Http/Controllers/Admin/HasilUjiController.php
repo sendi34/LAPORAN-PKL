@@ -7,6 +7,7 @@ use App\Models\HasilUji;
 use App\Models\Observasi;
 use App\Models\IndikatorUji;
 use App\Models\BakuMutuPeruntukan;
+use App\Services\TelegramService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -19,7 +20,7 @@ class HasilUjiController extends Controller
         'do',
     ];
 
-    // ── HELPER: hitung status berdasarkan nilai vs baku mutu ──
+    // ── HELPER: hitung status ──
     private function hitungStatus(float $nilai, float $bakuMutu, string $namaIndikator): string
     {
         $nama      = strtolower($namaIndikator);
@@ -27,27 +28,77 @@ class HasilUjiController extends Controller
             ->contains(fn($k) => str_contains($nama, $k));
 
         if ($isMinimum) {
-            // DO: semakin tinggi semakin baik, baku mutu adalah nilai minimum
-            if ($nilai >= $bakuMutu)
-                return 'Memenuhi Baku Mutu';
-            elseif ($nilai >= $bakuMutu * 0.75)
-                return 'Tercemar Ringan';
-            elseif ($nilai >= $bakuMutu * 0.50)
-                return 'Tercemar Sedang';
-            else
-                return 'Tercemar Berat';
+            if ($nilai >= $bakuMutu)             return 'Memenuhi Baku Mutu';
+            elseif ($nilai >= $bakuMutu * 0.75)  return 'Tercemar Ringan';
+            elseif ($nilai >= $bakuMutu * 0.50)  return 'Tercemar Sedang';
+            else                                 return 'Tercemar Berat';
         } else {
-            // Parameter maksimum: semakin rendah semakin baik
             $rasio = $nilai / $bakuMutu;
-            if ($rasio <= 1.0)
-                return 'Memenuhi Baku Mutu';
-            elseif ($rasio <= 2.0)
-                return 'Tercemar Ringan';
-            elseif ($rasio <= 5.0)
-                return 'Tercemar Sedang';
-            else
-                return 'Tercemar Berat';
+            if ($rasio <= 1.0)      return 'Memenuhi Baku Mutu';
+            elseif ($rasio <= 2.0)  return 'Tercemar Ringan';
+            elseif ($rasio <= 5.0)  return 'Tercemar Sedang';
+            else                    return 'Tercemar Berat';
         }
+    }
+
+    // ── HELPER: build pesan alert Telegram ──
+    private function buildAlertMessage(Observasi $observasi, array $hasilList): string
+    {
+        $namaLokasi = $observasi->lokasi->nama_lokasi ?? '-';
+        $alamat     = $observasi->lokasi->alamat_lokasi ?? '-';
+        $peruntukan = $observasi->lokasi->peruntukan ?? '-';
+        $tanggal    = \Carbon\Carbon::parse($observasi->tanggal_pemantauan)
+                        ->locale('id')->translatedFormat('d F Y');
+        $periode    = $observasi->periode_pemantauan == 1 ? 'I' : 'II';
+        $petugas    = $observasi->user->nama ?? '-';
+
+        $bermasalah = array_filter(
+            $hasilList,
+            fn($h) => !in_array($h['status'], ['Memenuhi Baku Mutu', 'Tidak Ada Baku Mutu'])
+        );
+
+        if (empty($bermasalah)) return '';
+
+        $ikonStatus = [
+            'Tercemar Ringan' => '🟡',
+            'Tercemar Sedang' => '🟠',
+            'Tercemar Berat'  => '🔴',
+        ];
+
+        $levelMap = [
+            'Tercemar Ringan' => 1,
+            'Tercemar Sedang' => 2,
+            'Tercemar Berat'  => 3,
+        ];
+
+        $statusTerburuk = collect($bermasalah)
+            ->sortByDesc(fn($h) => $levelMap[$h['status']] ?? 0)
+            ->first()['status'] ?? 'Tercemar Ringan';
+
+        $headerIkon = $ikonStatus[$statusTerburuk] ?? '⚠️';
+
+        $barisList = '';
+        foreach ($bermasalah as $h) {
+            $ikon       = $ikonStatus[$h['status']] ?? '⚠️';
+            $barisList .= "\n{$ikon} <b>{$h['nama']}</b>: {$h['nilai']} {$h['satuan']} → Baku Mutu: {$h['baku_mutu']} → <b>{$h['status']}</b>";
+        }
+
+        $jumlah = count($bermasalah);
+
+        return "
+{$headerIkon} <b>ALERT PENCEMARAN TERDETEKSI</b> {$headerIkon}
+
+📍 <b>Lokasi:</b> {$namaLokasi}
+🗺️ <b>Alamat:</b> {$alamat}
+🏭 <b>Peruntukan:</b> {$peruntukan}
+📅 <b>Tanggal:</b> {$tanggal} | Periode {$periode}
+👤 <b>Petugas:</b> {$petugas}
+
+⚠️ <b>{$jumlah} Parameter Melebihi Baku Mutu:</b>
+{$barisList}
+
+🕐 <i>" . now()->format('d/m/Y H:i') . " WITA</i>
+        ";
     }
 
     public function index()
@@ -79,7 +130,8 @@ class HasilUjiController extends Controller
             'file_berkas'  => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
         ]);
 
-        $observasi  = Observasi::with('lokasi')->findOrFail($request->observasi_id);
+        // Load dengan user untuk keperluan alert
+        $observasi  = Observasi::with(['lokasi', 'user'])->findOrFail($request->observasi_id);
         $peruntukan = $observasi->lokasi->peruntukan;
 
         $duplikat = HasilUji::where('observasi_id', $request->observasi_id)
@@ -97,13 +149,15 @@ class HasilUjiController extends Controller
             $filePath = $request->file('file_berkas')->store('hasil_uji', 'public');
         }
 
+        // Kumpulkan hasil untuk alert
+        $hasilList = [];
+
         foreach ($request->indikator_id as $i => $id) {
-            $baku     = BakuMutuPeruntukan::where('indikator_id', $id)
+            $baku      = BakuMutuPeruntukan::where('indikator_id', $id)
                 ->where('peruntukan', $peruntukan)
                 ->first();
-            $bakuMutu = $baku ? $baku->baku_mutu : null;
-            $nilai    = (float) $request->nilai[$i];
-
+            $bakuMutu  = $baku ? $baku->baku_mutu : null;
+            $nilai     = (float) $request->nilai[$i];
             $indikator = IndikatorUji::find($id);
             $status    = null;
 
@@ -120,6 +174,27 @@ class HasilUjiController extends Controller
                 'keterangan'   => $request->keterangan,
                 'file_berkas'  => $filePath,
             ]);
+
+            // Kumpulkan untuk alert
+            $hasilList[] = [
+                'nama'      => $indikator->nama_indikator ?? '-',
+                'satuan'    => $indikator->satuan ?? '',
+                'nilai'     => $nilai,
+                'baku_mutu' => $bakuMutu ?? '-',
+                'status'    => $status ?? 'Tidak Ada Baku Mutu',
+            ];
+        }
+
+        // ── KIRIM ALERT TELEGRAM jika ada yang bermasalah ──
+        $adaBermasalah = collect($hasilList)->contains(
+            fn($h) => !in_array($h['status'], ['Memenuhi Baku Mutu', 'Tidak Ada Baku Mutu'])
+        );
+
+        if ($adaBermasalah) {
+            $pesan = $this->buildAlertMessage($observasi, $hasilList);
+            if (!empty(trim($pesan))) {
+                (new TelegramService())->send($pesan);
+            }
         }
 
         return redirect()->route('admin.hasiluji.index')
@@ -173,26 +248,27 @@ class HasilUjiController extends Controller
             'file_berkas'  => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:5120',
         ]);
 
-        $observasi  = Observasi::with('lokasi')->findOrFail($observasi_id);
+        // Load dengan user untuk keperluan alert
+        $observasi  = Observasi::with(['lokasi', 'user'])->findOrFail($observasi_id);
         $peruntukan = $observasi->lokasi->peruntukan;
 
         $hasilUjiLama = HasilUji::where('observasi_id', $observasi_id)->first();
         $filePath     = $hasilUjiLama ? $hasilUjiLama->file_berkas : null;
 
         if ($request->hasFile('file_berkas')) {
-            if ($filePath) {
-                Storage::disk('public')->delete($filePath);
-            }
+            if ($filePath) Storage::disk('public')->delete($filePath);
             $filePath = $request->file('file_berkas')->store('hasil_uji', 'public');
         }
 
+        // Kumpulkan hasil untuk alert
+        $hasilList = [];
+
         foreach ($request->indikator_id as $i => $id) {
-            $baku     = BakuMutuPeruntukan::where('indikator_id', $id)
+            $baku      = BakuMutuPeruntukan::where('indikator_id', $id)
                 ->whereRaw('LOWER(peruntukan) = ?', [strtolower($peruntukan)])
                 ->first();
-            $bakuMutu = $baku ? $baku->baku_mutu : null;
-            $nilai    = (float) $request->nilai[$i];
-
+            $bakuMutu  = $baku ? $baku->baku_mutu : null;
+            $nilai     = (float) $request->nilai[$i];
             $indikator = IndikatorUji::find($id);
             $status    = null;
 
@@ -213,6 +289,27 @@ class HasilUjiController extends Controller
                     'file_berkas' => $filePath,
                 ]
             );
+
+            // Kumpulkan untuk alert
+            $hasilList[] = [
+                'nama'      => $indikator->nama_indikator ?? '-',
+                'satuan'    => $indikator->satuan ?? '',
+                'nilai'     => $nilai,
+                'baku_mutu' => $bakuMutu ?? '-',
+                'status'    => $status ?? 'Tidak Ada Baku Mutu',
+            ];
+        }
+
+        // ── KIRIM ALERT TELEGRAM jika ada yang bermasalah ──
+        $adaBermasalah = collect($hasilList)->contains(
+            fn($h) => !in_array($h['status'], ['Memenuhi Baku Mutu', 'Tidak Ada Baku Mutu'])
+        );
+
+        if ($adaBermasalah) {
+            $pesan = $this->buildAlertMessage($observasi, $hasilList);
+            if (!empty(trim($pesan))) {
+                (new TelegramService())->send($pesan);
+            }
         }
 
         return redirect()->route('admin.hasiluji.index')

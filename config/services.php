@@ -31,9 +31,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-        'gemini' => [
-    'key' => env('GEMINI_API_KEY', 'AIzaSyCQy9O0IsygvnRQUduH7D5vtrDzjCQusbM'),
-],
+    'telegram' => [
+    'token'   => env('TELEGRAM_BOT_TOKEN'),
+    'chat_id' => env('TELEGRAM_CHAT_ID'),
+    ],
 
 
 ];
