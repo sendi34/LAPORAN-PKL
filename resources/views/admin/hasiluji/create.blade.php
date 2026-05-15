@@ -13,7 +13,7 @@
 
 <div class="card shadow">
     <div class="card-body">
-        <form action="{{ route('admin.hasiluji.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('admin.hasiluji.store') }}" method="POST" enctype="multipart/form-data" class="ajax-form">
             @csrf
             @include('admin.hasiluji.form')
             <button type="submit" class="btn btn-success mt-3">

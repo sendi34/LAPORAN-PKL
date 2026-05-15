@@ -15,6 +15,84 @@
     <link href="{{ asset('sbadmin/css/sb-admin-2.min.css') }}" rel="stylesheet">
 
     <style>
+
+        /* ══════════════════════════════════════════
+   RESPONSIVE TABLE - BERLAKU SEMUA HALAMAN
+══════════════════════════════════════════ */
+
+/* Semua tabel otomatis scroll horizontal di mobile */
+.card .card-body .table-responsive,
+.card-body table {
+    width: 100%;
+}
+
+.card-body {
+    overflow-x: auto;
+}
+
+/* Tombol aksi - teks hilang di mobile, ikon saja */
+@media (max-width: 768px) {
+
+    /* Semua tabel bisa scroll */
+    table {
+        min-width: 500px;
+    }
+
+    /* Tombol lebih kecil */
+    .btn-sm {
+        padding: .2rem .4rem !important;
+        font-size: .75rem !important;
+    }
+
+    /* Sembunyikan teks tombol, tampilkan ikon saja */
+    .btn-sm .btn-text {
+        display: none;
+    }
+
+    /* Kolom aksi tidak wrap */
+    td:last-child, th:last-child {
+        white-space: nowrap;
+    }
+
+    /* Card header lebih kecil */
+    .card-header {
+        padding: .6rem 1rem;
+        font-size: .85rem;
+    }
+
+    /* Heading halaman */
+    .h3 { font-size: 1.1rem !important; }
+    h1.h3 { font-size: 1.1rem !important; }
+
+    /* Tombol tambah di header */
+    .btn.btn-primary {
+        font-size: .8rem;
+        padding: .3rem .7rem;
+    }
+
+    /* Pagination lebih kecil */
+    .pagination .page-link {
+        padding: .25rem .5rem;
+        font-size: .75rem;
+    }
+
+    /* Alert message */
+    .alert {
+        font-size: .82rem;
+        padding: .5rem .75rem;
+    }
+
+    /* Form control */
+    .form-control {
+        font-size: .82rem;
+    }
+
+    /* Badge */
+    .badge {
+        font-size: .65rem;
+    }
+}
+
         /* ── PAGINATION ── */
         .pagination { margin-bottom: 0; }
         .pagination .page-link {
@@ -130,6 +208,86 @@
 
     @stack('head')
 </head>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    document.querySelectorAll('form.ajax-form').forEach(function (form) {
+        form.addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const btn     = form.querySelector('[type="submit"]');
+            const btnText = btn.innerHTML;
+
+            btn.disabled  = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menyimpan...';
+
+            clearErrors(form);
+
+            try {
+                const res = await fetch(form.action, {
+                    method: form.method.toUpperCase(),
+                    body: new FormData(form),
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                const result = await res.json();
+
+                if (result.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: result.message ?? 'Data berhasil disimpan!',
+                        timer: 1500,
+                        showConfirmButton: false,
+                    }).then(() => {
+                        window.location.href = result.redirect;
+                    });
+
+                } else if (result.errors) {
+                    showErrors(form, result.errors);
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Periksa kembali!',
+                        text: 'Ada field yang belum diisi dengan benar.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+                }
+
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'Gagal!', text: 'Terjadi kesalahan server.' });
+            } finally {
+                btn.disabled  = false;
+                btn.innerHTML = btnText;
+            }
+        });
+    });
+
+    function clearErrors(form) {
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+        form.querySelectorAll('.ajax-error').forEach(el => el.remove());
+    }
+
+    function showErrors(form, errors) {
+        clearErrors(form);
+        for (const [field, messages] of Object.entries(errors)) {
+            const input = form.querySelector(`[name="${field}"]`)
+                       ?? form.querySelector(`[name="${field}[]"]`);
+            if (!input) continue;
+            input.classList.add('is-invalid');
+            const small       = document.createElement('small');
+            small.className   = 'text-danger ajax-error';
+            small.textContent = messages[0];
+            input.after(small);
+        }
+        form.querySelector('.is-invalid')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+});
+</script>
 
 <body id="page-top">
 

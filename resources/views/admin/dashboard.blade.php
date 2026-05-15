@@ -281,7 +281,7 @@ $pctSepakat   = $totalLok > 0 ? round($sepakatCount / $totalLok * 100) : 0;
 {{-- SECTION: AI --}}
 <div class="sec-label">
     <i class="fas fa-robot mr-1" style="color:#8b5cf6"></i>
-    Analisis Kecerdasan Buatan (Groq AI)
+    Analisis Kecerdasan Buatan (Llama 3.1)
 </div>
 
 <div class="row mb-4">
