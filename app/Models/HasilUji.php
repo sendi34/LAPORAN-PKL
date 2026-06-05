@@ -1,10 +1,11 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class HasilUji extends Model {
-
+class HasilUji extends Model
+{
     protected $table = 'hasil_uji';
 
     protected $fillable = [
@@ -14,17 +15,18 @@ class HasilUji extends Model {
         'baku_mutu',
         'status',
         'keterangan',
-        'file_berkas'
+        'file_berkas',
     ];
 
     public $timestamps = true;
 
-    public function observasi(){
-        return $this->belongsTo(Observasi::class,'observasi_id');
+    public function observasi()
+    {
+        return $this->belongsTo(Observasi::class, 'observasi_id');
     }
 
-    public function indikator(){
-        return $this->belongsTo(IndikatorUji::class,'indikator_id');
+    public function indikator()
+    {
+        return $this->belongsTo(IndikatorUji::class, 'indikator_id');
     }
-
 }

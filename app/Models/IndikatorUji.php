@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\BakuMutuPeruntukan;
 
 class IndikatorUji extends Model
 {
@@ -12,7 +11,7 @@ class IndikatorUji extends Model
     protected $fillable = [
         'kode_indikator',
         'nama_indikator',
-        'satuan'
+        'satuan',
     ];
 
     public $timestamps = true;
@@ -20,6 +19,6 @@ class IndikatorUji extends Model
     // relasi ke tabel baku mutu
     public function bakuMutu()
     {
-        return $this->hasMany(BakuMutuPeruntukan::class,'indikator_id');
+        return $this->hasMany(BakuMutuPeruntukan::class, 'indikator_id');
     }
 }

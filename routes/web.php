@@ -1,30 +1,24 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\AiDashboardController;
-
+use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 // Auth Controllers
+use App\Http\Controllers\Admin\HasilUjiController;
+use App\Http\Controllers\Admin\IndikatorController;
+// Admin Controllers
+use App\Http\Controllers\Admin\LaporanController as AdminLaporan;
+use App\Http\Controllers\Admin\LokasiController;
+use App\Http\Controllers\Admin\ObservasiController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
-
-// Admin Controllers
-use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\LokasiController;
-use App\Http\Controllers\Admin\IndikatorController;
-use App\Http\Controllers\Admin\ObservasiController;
-use App\Http\Controllers\Admin\HasilUjiController;
-use App\Http\Controllers\Admin\LaporanController as AdminLaporan;
-
-// Petugas Controllers
 use App\Http\Controllers\Petugas\DashboardController as PetugasDashboard;
-use App\Http\Controllers\Petugas\ObservasiController as PetugasObservasi;
+// Petugas Controllers
 use App\Http\Controllers\Petugas\HasilUjiController as PetugasHasilUji;
-use App\Http\Controllers\Petugas\LaporanController as PetugasLaporan;
-
-// Profile Controller
+use App\Http\Controllers\Petugas\ObservasiController as PetugasObservasi;
 use App\Http\Controllers\ProfileController;
-
+// Profile Controller
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -39,7 +33,6 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/register', [RegisterController::class, 'showForm'])->name('register');
 Route::post('/register', [RegisterController::class, 'register'])->name('register.post');
 
-
 /*
 |--------------------------------------------------------------------------
 | HALAMAN UTAMA — REDIRECT BERDASARKAN ROLE
@@ -47,7 +40,7 @@ Route::post('/register', [RegisterController::class, 'register'])->name('registe
 */
 Route::get('/', function () {
 
-    if (!auth()->check()) {
+    if (! auth()->check()) {
         return redirect()->route('login');
     }
 
@@ -62,7 +55,6 @@ Route::get('/', function () {
     return redirect()->route('login');
 
 })->name('home');
-
 
 /*
 |--------------------------------------------------------------------------
@@ -80,7 +72,6 @@ Route::middleware(['auth'])->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-
     /*
     |--------------------------------------------------------------------------
     | ADMIN PANEL
@@ -95,9 +86,9 @@ Route::middleware(['auth'])->group(function () {
 
             // ── AI ENDPOINTS ──
             Route::prefix('ai')->group(function () {
-                Route::get('/forecast',    [AiDashboardController::class, 'forecast']);
+                Route::get('/forecast', [AiDashboardController::class, 'forecast']);
                 Route::get('/correlation', [AiDashboardController::class, 'correlation']);
-                Route::get('/recommend',   [AiDashboardController::class, 'recommend']);
+                Route::get('/recommend', [AiDashboardController::class, 'recommend']);
             });
 
             Route::resource('users', UserController::class);
@@ -109,7 +100,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('laporan/{jenis}', [AdminLaporan::class, 'show'])->name('laporan.show');
             Route::get('laporan/{jenis}/cetak', [AdminLaporan::class, 'cetak'])->name('laporan.cetak');
         });
-
 
     /*
     |--------------------------------------------------------------------------
@@ -128,7 +118,7 @@ Route::middleware(['auth'])->group(function () {
         });
 });
 
-Route::get('/test-gemini-key', function() {
+Route::get('/test-gemini-key', function () {
     return config('services.gemini.key');
 });
 // Matikan route bawaan Breeze

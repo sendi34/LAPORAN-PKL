@@ -21,7 +21,7 @@ class RegisterController extends Controller
             'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:5|confirmed',
-            'role' => 'required|in:admin,petugas'
+            'role' => 'required|in:admin,petugas',
         ]);
 
         $user = User::create([

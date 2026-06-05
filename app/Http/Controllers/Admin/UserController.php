@@ -12,6 +12,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::orderBy('nama')->paginate(10);
+
         return view('admin.users.index', compact('users'));
     }
 
@@ -23,17 +24,17 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
+            'nama' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:5',
-            'role'     => 'required|in:admin,petugas',
+            'role' => 'required|in:admin,petugas',
         ]);
 
         User::create([
-            'nama'     => $request->nama,
-            'email'    => $request->email,
+            'nama' => $request->nama,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role'     => $request->role,
+            'role' => $request->role,
         ]);
 
         return redirect()->route('admin.users.index')
@@ -43,12 +44,14 @@ class UserController extends Controller
     public function show($id)
     {
         $user = User::findOrFail($id);
+
         return view('admin.users.show', compact('user'));
     }
 
     public function edit($id)
     {
         $user = User::findOrFail($id);
+
         return view('admin.users.edit', compact('user'));
     }
 
@@ -57,20 +60,20 @@ class UserController extends Controller
         $user = User::findOrFail($id);
 
         $request->validate([
-            'nama'  => 'required|string',
+            'nama' => 'required|string',
             'email' => "required|email|unique:users,email,$id",
-            'role'  => 'required|in:admin,petugas',
+            'role' => 'required|in:admin,petugas',
         ]);
 
         // update
-        $user->nama  = $request->nama;
+        $user->nama = $request->nama;
         $user->email = $request->email;
-        $user->role  = $request->role;
+        $user->role = $request->role;
 
         // jika password diisi maka update
         if ($request->filled('password')) {
             $request->validate([
-                'password' => 'min:5'
+                'password' => 'min:5',
             ]);
             $user->password = Hash::make($request->password);
         }

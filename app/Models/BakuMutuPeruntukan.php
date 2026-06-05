@@ -11,13 +11,13 @@ class BakuMutuPeruntukan extends Model
     protected $fillable = [
         'indikator_id',
         'peruntukan',
-        'baku_mutu'
+        'baku_mutu',
     ];
 
     public $timestamps = true;
 
     public function indikator()
     {
-        return $this->belongsTo(IndikatorUji::class,'indikator_id');
+        return $this->belongsTo(IndikatorUji::class, 'indikator_id');
     }
 }

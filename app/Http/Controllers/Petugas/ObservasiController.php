@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Petugas;
 
 use App\Http\Controllers\Controller;
-use App\Models\Observasi;
 use App\Models\Lokasi;
+use App\Models\Observasi;
 use Illuminate\Http\Request;
 
 class ObservasiController extends Controller
@@ -15,9 +15,9 @@ class ObservasiController extends Controller
 
         // DATA HANYA YG DIBUAT PETUGAS LOGIN
         $data = Observasi::with('lokasi')
-                ->where('user_id', $userId)
-                ->orderByDesc('id')
-                ->paginate(10);
+            ->where('user_id', $userId)
+            ->orderByDesc('id')
+            ->paginate(10);
 
         return view('petugas.observasi.index', compact('data'));
     }
@@ -32,19 +32,19 @@ class ObservasiController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'location_id'        => 'required',
+            'location_id' => 'required',
             'tanggal_pemantauan' => 'required|date',
             'periode_pemantauan' => 'required',
-            'shu'                => 'required|in:ADA SHU,TIDAK ADA SHU'
+            'shu' => 'required|in:ADA SHU,TIDAK ADA SHU',
         ]);
 
         Observasi::create([
-            'location_id'        => $request->location_id,
-            'user_id'            => auth()->user()->id, // AUTO PETUGAS LOGIN
+            'location_id' => $request->location_id,
+            'user_id' => auth()->user()->id, // AUTO PETUGAS LOGIN
             'tanggal_pemantauan' => $request->tanggal_pemantauan,
-            'tahun_pemantauan'   => date('Y', strtotime($request->tanggal_pemantauan)),
+            'tahun_pemantauan' => date('Y', strtotime($request->tanggal_pemantauan)),
             'periode_pemantauan' => $request->periode_pemantauan,
-            'shu'                => $request->shu
+            'shu' => $request->shu,
         ]);
 
         return redirect()->route('petugas.observasi.index')
@@ -54,9 +54,9 @@ class ObservasiController extends Controller
     public function show($id)
     {
         $obs = Observasi::with(['lokasi', 'user', 'hasilUji.indikator'])
-                ->where('id', $id)
-                ->where('user_id', auth()->user()->id) // SECURITY
-                ->firstOrFail();
+            ->where('id', $id)
+            ->where('user_id', auth()->user()->id) // SECURITY
+            ->firstOrFail();
 
         return view('petugas.observasi.show', compact('obs'));
     }
@@ -64,8 +64,8 @@ class ObservasiController extends Controller
     public function edit($id)
     {
         $obs = Observasi::where('id', $id)
-                ->where('user_id', auth()->user()->id)
-                ->firstOrFail();
+            ->where('user_id', auth()->user()->id)
+            ->firstOrFail();
 
         $lokasi = Lokasi::orderBy('nama_lokasi')->get();
 
@@ -75,22 +75,22 @@ class ObservasiController extends Controller
     public function update(Request $request, $id)
     {
         $obs = Observasi::where('id', $id)
-                ->where('user_id', auth()->user()->id)
-                ->firstOrFail();
+            ->where('user_id', auth()->user()->id)
+            ->firstOrFail();
 
         $request->validate([
-            'location_id'        => 'required',
+            'location_id' => 'required',
             'tanggal_pemantauan' => 'required|date',
             'periode_pemantauan' => 'required',
-            'shu'                => 'required|in:ADA SHU,TIDAK ADA SHU'
+            'shu' => 'required|in:ADA SHU,TIDAK ADA SHU',
         ]);
 
         $obs->update([
-            'location_id'        => $request->location_id,
+            'location_id' => $request->location_id,
             'tanggal_pemantauan' => $request->tanggal_pemantauan,
-            'tahun_pemantauan'   => date('Y', strtotime($request->tanggal_pemantauan)),
+            'tahun_pemantauan' => date('Y', strtotime($request->tanggal_pemantauan)),
             'periode_pemantauan' => $request->periode_pemantauan,
-            'shu'                => $request->shu
+            'shu' => $request->shu,
         ]);
 
         return redirect()->route('petugas.observasi.index')
@@ -100,8 +100,8 @@ class ObservasiController extends Controller
     public function destroy($id)
     {
         $obs = Observasi::where('id', $id)
-                ->where('user_id', auth()->user()->id)
-                ->firstOrFail();
+            ->where('user_id', auth()->user()->id)
+            ->firstOrFail();
 
         $obs->delete();
 

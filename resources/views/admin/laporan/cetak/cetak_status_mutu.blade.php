@@ -96,7 +96,9 @@
 
     <br><br><br><br>
 
-    <strong><u>Rahmat Prapto Udoyo, S.Hut, MP</u></strong>
+    <strong><u>Rahmat Prapto Udoyo, S.Hut, MP</u></strong><br>
+        Pembina Utama Muda (IV/c)<br>
+        NIP. 19691212 199212 1 004
 </div>
 
 </body>

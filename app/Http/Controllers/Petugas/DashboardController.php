@@ -3,16 +3,15 @@
 namespace App\Http\Controllers\Petugas;
 
 use App\Http\Controllers\Controller;
-use App\Models\HasilUji;
 use App\Models\Observasi;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
     public function index(Request $request)
     {
-        $tahun  = $request->query('tahun', date('Y'));
+        $tahun = $request->query('tahun', date('Y'));
         $userId = auth()->id();
 
         // ── CARDS RINGKASAN ──
@@ -50,9 +49,9 @@ class DashboardController extends Controller
             ->keyBy('status');
 
         $statusMemenuhi = $statusCount['Memenuhi Baku Mutu']->total ?? 0;
-        $statusRingan   = $statusCount['Tercemar Ringan']->total ?? 0;
-        $statusSedang   = $statusCount['Tercemar Sedang']->total ?? 0;
-        $statusBerat    = $statusCount['Tercemar Berat']->total ?? 0;
+        $statusRingan = $statusCount['Tercemar Ringan']->total ?? 0;
+        $statusSedang = $statusCount['Tercemar Sedang']->total ?? 0;
+        $statusBerat = $statusCount['Tercemar Berat']->total ?? 0;
 
         // ── GRAFIK OBSERVASI PER LOKASI ──
         $observasiLokasi = DB::table('observasi')
@@ -69,8 +68,8 @@ class DashboardController extends Controller
 
         // ── GRAFIK STATUS PER PARAMETER ──
         $statusParam = DB::table('hasil_uji')
-            ->join('observasi',     'hasil_uji.observasi_id', '=', 'observasi.id')
-            ->join('indikator_uji', 'indikator_uji.id',       '=', 'hasil_uji.indikator_id')
+            ->join('observasi', 'hasil_uji.observasi_id', '=', 'observasi.id')
+            ->join('indikator_uji', 'indikator_uji.id', '=', 'hasil_uji.indikator_id')
             ->where('observasi.user_id', $userId)
             ->where('observasi.tahun_pemantauan', $tahun)
             ->select(
@@ -106,8 +105,8 @@ class DashboardController extends Controller
 
         // ── PARAMETER PALING SERING TERCEMAR ──
         $parameterTercemar = DB::table('hasil_uji')
-            ->join('observasi',     'hasil_uji.observasi_id', '=', 'observasi.id')
-            ->join('indikator_uji', 'indikator_uji.id',       '=', 'hasil_uji.indikator_id')
+            ->join('observasi', 'hasil_uji.observasi_id', '=', 'observasi.id')
+            ->join('indikator_uji', 'indikator_uji.id', '=', 'hasil_uji.indikator_id')
             ->where('observasi.user_id', $userId)
             ->where('observasi.tahun_pemantauan', $tahun)
             ->where('hasil_uji.status', '!=', 'Memenuhi Baku Mutu')

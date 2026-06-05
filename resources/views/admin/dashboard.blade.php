@@ -455,7 +455,7 @@ $pctSepakat   = $totalLok > 0 ? round($sepakatCount / $totalLok * 100) : 0;
     <div class="card-body">
         <div id="chartTrend"></div>
         <small class="text-muted">
-            <span style="color:#3b82f6">●</span> Skor STORET (makin negatif = makin buruk) &nbsp;
+            <span style="color:#3b82f6">●</span> Skor STORET (makin tinggi = makin buruk) &nbsp;
             <span style="color:#8b5cf6">●</span> Nilai IP (makin tinggi = makin tercemar)
         </small>
     </div>
