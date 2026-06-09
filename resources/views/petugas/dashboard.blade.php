@@ -3,6 +3,7 @@
 
 @push('head')
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=DM+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <style>
 body, .container-fluid { font-family: 'DM Sans', sans-serif; }
 .metric-card {
@@ -262,4 +263,16 @@ lokasiData.forEach(function(item) {
         .bindPopup('<b>' + item.nama_lokasi + '</b><br>' + item.alamat_lokasi);
 });
 </script>
+@if(session('success'))
+<script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Berhasil!',
+        text: "{{ session('success') }}",
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false
+    });
+</script>
+@endif
 @endpush

@@ -301,9 +301,9 @@ class LaporanController extends Controller
                 'observasi.tahun_pemantauan as tahun',
                 'observasi.periode_pemantauan as periode',
                 'indikator_uji.nama_indikator as parameter_uji',
-                DB::raw('ROUND(hasil_uji.nilai, 4) as nilai'),
+                'hasil_uji.nilai',
                 'indikator_uji.satuan',
-                DB::raw('ROUND(hasil_uji.baku_mutu, 4) as baku_mutu'),
+                'hasil_uji.baku_mutu',
                 'hasil_uji.status',
             );
 
@@ -311,7 +311,11 @@ class LaporanController extends Controller
         if ($tahun)     $q->where('observasi.tahun_pemantauan', $tahun);
         if ($periode)   $q->where('observasi.periode_pemantauan', $periode);
 
-        return $q->orderBy('lokasi.kode_lokasi')->get();
+        return $q->orderBy('lokasi.kode_lokasi')->get()->map(function ($row) {
+            $row->nilai     = (float) $row->nilai;
+            $row->baku_mutu = (float) $row->baku_mutu;
+            return $row;
+        });
     }
 
     // ============================================================
@@ -631,7 +635,7 @@ class LaporanController extends Controller
             ->select(
                 'observasi.tahun_pemantauan as tahun',
                 'indikator_uji.nama_indikator as parameter',
-                DB::raw('ROUND(AVG(hasil_uji.nilai), 4) as rata_nilai')
+                DB::raw('AVG(hasil_uji.nilai) as rata_nilai')
             )
             ->when($tahun_awal,   fn($q) => $q->where('observasi.tahun_pemantauan', '>=', $tahun_awal))
             ->when($tahun_akhir,  fn($q) => $q->where('observasi.tahun_pemantauan', '<=', $tahun_akhir))
@@ -646,6 +650,7 @@ class LaporanController extends Controller
         $last   = [];
 
         foreach ($data as $row) {
+            $row->rata_nilai = (float) $row->rata_nilai;
             $param = $row->parameter;
             if (!isset($last[$param])) {
                 $row->trend = '-';

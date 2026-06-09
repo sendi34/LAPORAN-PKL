@@ -27,11 +27,13 @@ class LoginController extends Controller
 
             // Redirect berdasarkan role
             if ($user->role === 'admin') {
-                return redirect('/admin/dashboard');
+                return redirect('/admin/dashboard')
+                ->with('success', 'Login berhasil! Selamat datang, ' . $user->nama . '.');
             }
 
             if ($user->role === 'petugas') {
-                return redirect('/petugas/dashboard');
+                return redirect('/petugas/dashboard')
+                ->with('success', 'Login berhasil! Selamat datang, ' . $user->nama . '.');
             }
 
             return redirect('/');
@@ -46,6 +48,7 @@ class LoginController extends Controller
     {
         Auth::logout();
 
-        return redirect('/login');
+        return redirect('/login')
+        ->with('success', 'Logout berhasil! Sampai jumpa.');
     }
 }
