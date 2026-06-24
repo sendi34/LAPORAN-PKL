@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
@@ -28,32 +27,32 @@ class IndikatorController extends Controller
         $request->validate([
             'kode_indikator' => 'required|unique:indikator_uji,kode_indikator',
             'nama_indikator' => 'required',
-            'satuan' => 'required',
+            'satuan'         => 'required',
+            'biota_laut'     => 'nullable|numeric',
+            'pelabuhan'      => 'nullable|numeric',
+            'wisata_bahari'  => 'nullable|numeric',
         ]);
 
         $indikator = IndikatorUji::create([
             'kode_indikator' => $request->kode_indikator,
             'nama_indikator' => $request->nama_indikator,
-            'satuan' => $request->satuan,
-        ]);
-
-        // simpan baku mutu peruntukan
-        BakuMutuPeruntukan::create([
-            'indikator_id' => $indikator->id,
-            'peruntukan' => 'Biota Laut',
-            'baku_mutu' => $request->biota_laut,
+            'satuan'         => $request->satuan,
         ]);
 
         BakuMutuPeruntukan::create([
             'indikator_id' => $indikator->id,
-            'peruntukan' => 'Pelabuhan',
-            'baku_mutu' => $request->pelabuhan,
+            'peruntukan'   => 'Biota Laut',
+            'baku_mutu'    => $request->biota_laut,
         ]);
-
         BakuMutuPeruntukan::create([
             'indikator_id' => $indikator->id,
-            'peruntukan' => 'Wisata Bahari',
-            'baku_mutu' => $request->wisata_bahari,
+            'peruntukan'   => 'Pelabuhan',
+            'baku_mutu'    => $request->pelabuhan,
+        ]);
+        BakuMutuPeruntukan::create([
+            'indikator_id' => $indikator->id,
+            'peruntukan'   => 'Wisata Bahari',
+            'baku_mutu'    => $request->wisata_bahari,
         ]);
 
         return redirect()->route('admin.indikator.index')
@@ -63,14 +62,12 @@ class IndikatorController extends Controller
     public function show($id)
     {
         $i = IndikatorUji::with('bakuMutu')->findOrFail($id);
-
         return view('admin.indikator.show', compact('i'));
     }
 
     public function edit($id)
     {
         $i = IndikatorUji::with('bakuMutu')->findOrFail($id);
-
         return view('admin.indikator.edit', compact('i'));
     }
 
@@ -79,28 +76,26 @@ class IndikatorController extends Controller
         $request->validate([
             'kode_indikator' => "required|unique:indikator_uji,kode_indikator,$id",
             'nama_indikator' => 'required',
-            'satuan' => 'required',
+            'satuan'         => 'required',
+            'biota_laut'     => 'nullable|numeric',
+            'pelabuhan'      => 'nullable|numeric',
+            'wisata_bahari'  => 'nullable|numeric',
         ]);
 
         $i = IndikatorUji::findOrFail($id);
-
         $i->update([
             'kode_indikator' => $request->kode_indikator,
             'nama_indikator' => $request->nama_indikator,
-            'satuan' => $request->satuan,
+            'satuan'         => $request->satuan,
         ]);
 
-        // update baku mutu
         foreach ($i->bakuMutu as $b) {
-
             if ($b->peruntukan == 'Biota Laut') {
                 $b->update(['baku_mutu' => $request->biota_laut]);
             }
-
             if ($b->peruntukan == 'Pelabuhan') {
                 $b->update(['baku_mutu' => $request->pelabuhan]);
             }
-
             if ($b->peruntukan == 'Wisata Bahari') {
                 $b->update(['baku_mutu' => $request->wisata_bahari]);
             }
@@ -113,10 +108,7 @@ class IndikatorController extends Controller
     public function destroy($id)
     {
         $indikator = IndikatorUji::findOrFail($id);
-
-        // hapus baku mutu
         BakuMutuPeruntukan::where('indikator_id', $indikator->id)->delete();
-
         $indikator->delete();
 
         return redirect()->route('admin.indikator.index')

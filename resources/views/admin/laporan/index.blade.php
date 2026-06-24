@@ -424,7 +424,8 @@
 
     {{-- TOMBOL CETAK - CARA SEDERHANA DENGAN LINK LANGSUNG --}}
     <a href="{{ route('admin.laporan.cetak', $jenis) }}?{{ http_build_query(request()->query()) }}"
-        class="btn btn-danger mb-3" target="_blank">
+        class="btn btn-danger mb-3"
+        onclick="notifCetak(event, this)">
         <i class="fas fa-file-pdf"></i> Cetak PDF
     </a>
 
@@ -461,5 +462,19 @@
             @endif
         </div>
     </div>
-
+<script>
+function notifCetak(e, el) {
+    e.preventDefault();
+    Swal.fire({
+        icon: 'info',
+        title: 'Mengunduh PDF...',
+        text: 'File laporan sedang diunduh ke perangkat Anda.',
+        timer: 2000,
+        timerProgressBar: true,
+        showConfirmButton: false
+    }).then(() => {
+        window.location.href = el.href;
+    });
+}
+</script>
 @endsection

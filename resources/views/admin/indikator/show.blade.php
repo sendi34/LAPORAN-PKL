@@ -52,7 +52,7 @@
                 <tr>
                     <td>{{ $k + 1 }}</td>
                     <td>{{ $b->peruntukan }}</td>
-                    <td>{{ rtrim(rtrim(number_format($b->baku_mutu,4,'.',''),'0'),'.') }}</td>
+                    <td>{{ $b->baku_mutu_formatted ?? '-' }}</td>
                 </tr>
                 @endforeach
             </tbody>

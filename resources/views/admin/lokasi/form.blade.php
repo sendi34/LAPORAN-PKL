@@ -38,9 +38,9 @@
     </div>
 
     <div class="col-md-3 mt-3">
-        <label>Longtitude</label>
-        <input type="text" id="longtitude" name="longtitude" class="form-control"
-            value="{{ old('longtitude', $lokasi->longtitude ?? '') }}">
+        <label>Longitude</label>
+        <input type="text" id="longitude" name="longitude" class="form-control"
+            value="{{ old('longitude', $lokasi->longitude ?? '') }}">
     </div>
 
     <div class="col-md-6 mt-3">
@@ -82,7 +82,7 @@
 <script>
 
 var lat = document.getElementById('latitude').value || -3.44218;
-var lng = document.getElementById('longtitude').value || 114.82621;
+var lng = document.getElementById('longitude').value || 114.82621;
 
 var map = L.map('map').setView([lat,lng], 10);
 
@@ -100,7 +100,7 @@ map.on('click', function(e){
     marker.setLatLng([latitude,longitude]);
 
     document.getElementById('latitude').value = latitude;
-    document.getElementById('longtitude').value = longitude;
+    document.getElementById('longitude').value = longitude;
 
 });
 
