@@ -9,10 +9,9 @@
             <form method="POST" action="{{ route('admin.users.store') }}">
                 @csrf
                 @include('admin.users.form')
-                <button class="btn btn-success mt-3">Simpan</button>
+                <button type="submit" class="btn btn-success mt-3">Simpan</button>
             </form>
         </div>
     </div>
-
 
 @endsection

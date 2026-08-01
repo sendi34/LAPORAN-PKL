@@ -130,7 +130,7 @@
                                     </a>
                                     <form action="{{ route('admin.hasiluji.destroy', $firstItem->id) }}" method="POST"
                                         class="d-inline"
-                                        onsubmit="return confirm('Yakin ingin menghapus semua hasil uji observasi ini?')">
+                                        onsubmit="return confirm('Yakin ingin menghapus hasil uji ini?')">
                                         @csrf
                                         @method('DELETE')
                                         <button class="btn btn-danger btn-sm" title="Hapus">

@@ -23,22 +23,19 @@ class UserController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nama' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:5',
             'role' => 'required|in:admin,petugas',
         ]);
 
-        User::create([
-            'nama' => $request->nama,
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
-            'role' => $request->role,
-        ]);
+        $validated['password'] = Hash::make($validated['password']);
+
+        User::create($validated);
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'User berhasil ditambahkan.');
+            ->with('success', 'Pengguna berhasil ditambahkan.');
     }
 
     public function show($id)
@@ -59,29 +56,20 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $request->validate([
-            'nama' => 'required|string',
+        $validated = $request->validate([
+            'nama' => 'required|string|max:255',
             'email' => "required|email|unique:users,email,$id",
             'role' => 'required|in:admin,petugas',
         ]);
 
-        // update
-        $user->nama = $request->nama;
-        $user->email = $request->email;
-        $user->role = $request->role;
-
-        // jika password diisi maka update
         if ($request->filled('password')) {
-            $request->validate([
-                'password' => 'min:5',
-            ]);
-            $user->password = Hash::make($request->password);
+            $validated['password'] = Hash::make($request->password);
         }
 
-        $user->save();
+        $user->update($validated);
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'Data user berhasil diperbarui.');
+            ->with('success', 'Pengguna berhasil diperbarui.');
     }
 
     public function destroy($id)
@@ -89,6 +77,6 @@ class UserController extends Controller
         User::destroy($id);
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'User berhasil dihapus.');
+            ->with('success', 'Pengguna berhasil dihapus.');
     }
 }

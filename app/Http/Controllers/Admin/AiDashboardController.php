@@ -10,9 +10,13 @@ use Illuminate\Support\Facades\Log;
 
 class AiDashboardController extends Controller
 {
-    private $groqApiKey = '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';
-
+    private $groqApiKey;
     private $groqModel = 'llama-3.1-8b-instant';
+
+    public function __construct()
+    {
+        $this->groqApiKey = env('GROQ_API_KEY');
+    }
 
     public function forecast(Request $request)
     {
@@ -217,6 +221,10 @@ class AiDashboardController extends Controller
 
     private function callGroq(string $prompt): array
     {
+        if (empty($this->groqApiKey)) {
+            return ['error' => 'GROQ_API_KEY tidak dikonfigurasi di .env'];
+        }
+
         $url = 'https://api.groq.com/openai/v1/chat/completions';
 
         try {
@@ -252,7 +260,6 @@ class AiDashboardController extends Controller
                 return ['error' => 'Groq mengembalikan respons kosong.'];
             }
 
-            // Bersihkan markdown fence jika ada
             $text = preg_replace('/```json\s*|\s*```/', '', $text);
             $text = preg_replace('/```\s*|\s*```/', '', $text);
             $decoded = json_decode(trim($text), true);

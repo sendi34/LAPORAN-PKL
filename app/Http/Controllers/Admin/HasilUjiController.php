@@ -341,6 +341,6 @@ class HasilUjiController extends Controller
         HasilUji::where('observasi_id', $hu->observasi_id)->delete();
 
         return redirect()->route('admin.hasiluji.index')
-            ->with('success', 'Semua hasil uji dalam observasi ini telah dihapus');
+            ->with('success', 'hasil uji berhasil dihapus');
     }
 }
