@@ -3,7 +3,7 @@
 
 @section('content')
 
-    <h1 class="h3 mb-4">Tambah Pengguna1</h1>
+    <h1 class="h3 mb-4">Tambah Pengguna</h1>
     <div class="card shadow">
         <div class="card-body">
             <form method="POST" action="{{ route('admin.users.store') }}">
