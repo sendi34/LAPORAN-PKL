@@ -413,6 +413,10 @@ document.addEventListener('DOMContentLoaded', function () {
                                 href="{{ route('admin.laporan.show', 'tren-kualitas-air') }}">
                                 <i class="fas fa-chart-line fa-sm mr-2"></i> Tren Kualitas Air
                             </a>
+                            <a class="collapse-item {{ request()->is('admin/laporan/kinerja-pemantauan') ? 'active' : '' }}"
+                                href="{{ route('admin.laporan.show', 'kinerja-pemantauan') }}">
+                                <i class="fas fa-tasks fa-sm mr-2"></i> Kinerja Pemantauan
+                            </a>
                             <a class="collapse-item {{ request()->is('admin/laporan/storet') ? 'active' : '' }}"
                                 href="{{ route('admin.laporan.show', 'storet') }}">
                                 <i class="fas fa-calculator fa-sm mr-2"></i> Metode STORET

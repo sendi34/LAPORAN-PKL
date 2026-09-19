@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -121,6 +122,15 @@ class LaporanController extends Controller
                 $data         = $this->laporanTrenKualitasAir($tahun_awal, $tahun_akhir, $indikator_id, $lokasi_id);
                 $title        = "Laporan Tren Kualitas Air";
                 $viewCetak    = 'admin.laporan.cetak.cetak_tren_kualitas';
+                break;
+
+            case 'kinerja-pemantauan':
+                $tahun     = $request->query('tahun', date('Y'));
+                $periode   = $request->query('periode');
+                $lokasi_id = $request->query('lokasi_id');
+                $data      = $this->laporanKinerjaPemantauan($tahun, $periode, $lokasi_id);
+                $title     = "Laporan Kinerja Pemantauan";
+                $viewCetak = 'admin.laporan.cetak.cetak_kinerja_pemantauan';
                 break;
 
             case 'indeks-pencemaran':
@@ -246,6 +256,17 @@ class LaporanController extends Controller
                 $data         = $this->laporanTrenKualitasAir($tahun_awal, $tahun_akhir, $indikator_id, $lokasi_id);
                 $title        = "Laporan Tren Kualitas Air";
                 $view         = 'admin.laporan.cetak.cetak_tren_kualitas';
+                break;
+
+            case 'kinerja-pemantauan':
+                $tahun     = $request->query('tahun', date('Y'));
+                $periode   = $request->query('periode');
+                $lokasi_id = $request->query('lokasi_id');
+                $data      = $this->laporanKinerjaPemantauan($tahun, $periode, $lokasi_id);
+                $title     = "Laporan Kinerja Pemantauan";
+                if ($tahun) $title .= " Tahun " . $tahun;
+                if ($periode) $title .= " Periode " . ($periode == 1 ? 'I' : 'II');
+                $view      = 'admin.laporan.cetak.cetak_kinerja_pemantauan';
                 break;
 
             case 'indeks-pencemaran':
@@ -634,6 +655,8 @@ class LaporanController extends Controller
             ->join('lokasi',        'lokasi.id',              '=', 'observasi.location_id')
             ->select(
                 'observasi.tahun_pemantauan as tahun',
+                'observasi.periode_pemantauan as periode',
+                'lokasi.nama_lokasi as lokasi',
                 'indikator_uji.nama_indikator as parameter',
                 DB::raw('AVG(hasil_uji.nilai) as rata_nilai')
             )
@@ -641,9 +664,11 @@ class LaporanController extends Controller
             ->when($tahun_akhir,  fn($q) => $q->where('observasi.tahun_pemantauan', '<=', $tahun_akhir))
             ->when($indikator_id, fn($q) => $q->where('hasil_uji.indikator_id', $indikator_id))
             ->when($lokasi_id,    fn($q) => $q->where('observasi.location_id', $lokasi_id))
-            ->groupBy('tahun', 'parameter')
+            ->groupBy('tahun', 'periode', 'lokasi', 'parameter')
+            ->orderBy('lokasi')
             ->orderBy('parameter')
             ->orderBy('tahun')
+            ->orderBy('periode')
             ->get();
 
         $result = [];
@@ -651,15 +676,15 @@ class LaporanController extends Controller
 
         foreach ($data as $row) {
             $row->rata_nilai = (float) $row->rata_nilai;
-            $param = $row->parameter;
-            if (!isset($last[$param])) {
+            $key = $row->lokasi . '|' . $row->parameter;
+            if (!isset($last[$key])) {
                 $row->trend = '-';
             } else {
-                if ($row->rata_nilai > $last[$param])      $row->trend = 'Naik';
-                elseif ($row->rata_nilai < $last[$param])  $row->trend = 'Turun';
-                else                                       $row->trend = 'Stabil';
+                if ($row->rata_nilai > $last[$key])      $row->trend = 'Naik';
+                elseif ($row->rata_nilai < $last[$key])  $row->trend = 'Turun';
+                else                                     $row->trend = 'Stabil';
             }
-            $last[$param] = $row->rata_nilai;
+            $last[$key] = $row->rata_nilai;
             $result[]     = $row;
         }
 
@@ -667,7 +692,82 @@ class LaporanController extends Controller
     }
 
     // ============================================================
-    // 9. LAPORAN INDEKS PENCEMARAN
+    // 9. LAPORAN KINERJA PEMANTAUAN (REALISASI VS JADWAL)
+    // Asumsi jadwal standar: 2 periode per tahun (I dan II) per lokasi
+    // ============================================================
+    private function laporanKinerjaPemantauan($tahun = null, $periode = null, $lokasi_id = null)
+    {
+        $tahun = $tahun ?: date('Y');
+
+        $lokasi = DB::table('lokasi')
+            ->select('id', 'kode_lokasi', 'nama_lokasi', 'alamat_lokasi')
+            ->when($lokasi_id, fn($q) => $q->where('id', $lokasi_id))
+            ->orderBy('kode_lokasi')
+            ->get();
+
+        $targetPerLokasi = $periode ? 1 : 2;
+        $hasil = [];
+
+        foreach ($lokasi as $row) {
+            $realisasiPeriode = DB::table('observasi')
+                ->select(
+                    'periode_pemantauan',
+                    DB::raw('MIN(tanggal_pemantauan) as tanggal_realisasi')
+                )
+                ->where('location_id', $row->id)
+                ->where('tahun_pemantauan', $tahun)
+                ->when($periode, fn($q) => $q->where('periode_pemantauan', $periode))
+                ->groupBy('periode_pemantauan')
+                ->get();
+
+            $jumlahRealisasi = $realisasiPeriode->count();
+            $jumlahTepatWaktu = 0;
+
+            foreach ($realisasiPeriode as $realisasi) {
+                $periodeInt = (int) $realisasi->periode_pemantauan;
+                $deadline = $periodeInt === 1
+                    ? Carbon::create((int) $tahun, 6, 30)->endOfDay()
+                    : Carbon::create((int) $tahun, 12, 31)->endOfDay();
+
+                if (Carbon::parse($realisasi->tanggal_realisasi)->lte($deadline)) {
+                    $jumlahTepatWaktu++;
+                }
+            }
+
+            $persenCapaian = $targetPerLokasi > 0
+                ? round(($jumlahRealisasi / $targetPerLokasi) * 100, 2)
+                : 0;
+            $persenTepatWaktu = $targetPerLokasi > 0
+                ? round(($jumlahTepatWaktu / $targetPerLokasi) * 100, 2)
+                : 0;
+
+            if ($jumlahRealisasi >= $targetPerLokasi) {
+                $status = 'Tercapai';
+            } elseif ($jumlahRealisasi > 0) {
+                $status = 'Belum Tercapai';
+            } else {
+                $status = 'Belum Ada Realisasi';
+            }
+
+            $hasil[] = (object) [
+                'kode_lokasi' => $row->kode_lokasi,
+                'lokasi' => $row->nama_lokasi,
+                'alamat_lokasi' => $row->alamat_lokasi,
+                'tahun' => (int) $tahun,
+                'target_jadwal' => $targetPerLokasi,
+                'realisasi' => $jumlahRealisasi,
+                'belum_terealisasi' => max($targetPerLokasi - $jumlahRealisasi, 0),
+                'capaian_persen' => $persenCapaian,
+                'tepat_waktu_persen' => $persenTepatWaktu,
+                'status' => $status,
+            ];
+        }
+
+        return collect($hasil)->sortBy('kode_lokasi')->values();
+    }
+
+    // ============================================================
+    // 10. LAPORAN INDEKS PENCEMARAN
     // ============================================================
     private function laporanIndeksPencemaran($tahun = null, $periode = null, $lokasi_id = null)
     {
@@ -730,7 +830,7 @@ class LaporanController extends Controller
     }
 
     // ============================================================
-    // 10. LAPORAN METODE STORET
+    // 11. LAPORAN METODE STORET
     // ✅ Diperbaiki: DO dihitung melanggar jika nilai < baku mutu
     // ============================================================
     private function laporanStoret($tahun = null, $periode = null, $lokasi_id = null)

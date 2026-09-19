@@ -333,6 +333,46 @@
         </div>
     @endif
 
+    {{-- FILTER KHUSUS LAPORAN KINERJA PEMANTAUAN --}}
+    @if ($jenis == 'kinerja-pemantauan')
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="GET">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label>Tahun</label>
+                            <input type="number" name="tahun" class="form-control" value="{{ request('tahun', date('Y')) }}">
+                        </div>
+                        <div class="col-md-3">
+                            <label>Periode</label>
+                            <select name="periode" class="form-control">
+                                <option value="">-- Semua Periode --</option>
+                                <option value="1" {{ request('periode') == 1 ? 'selected' : '' }}>I</option>
+                                <option value="2" {{ request('periode') == 2 ? 'selected' : '' }}>II</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label>Lokasi</label>
+                            <select name="lokasi_id" class="form-control">
+                                <option value="">-- Semua Lokasi --</option>
+                                @foreach (\App\Models\Lokasi::orderBy('kode_lokasi')->get() as $l)
+                                    <option value="{{ $l->id }}"
+                                        {{ request('lokasi_id') == $l->id ? 'selected' : '' }}>
+                                        {{ $l->kode_lokasi }} - {{ $l->nama_lokasi }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label>&nbsp;</label><br>
+                            <button class="btn btn-primary">Tampilkan</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
     {{-- FILTER KHUSUS LAPORAN INDEKS PENCEMARAN --}}
     @if ($jenis == 'indeks-pencemaran')
         <div class="card mb-3">
@@ -429,6 +469,17 @@
         <i class="fas fa-file-pdf"></i> Cetak PDF
     </a>
 
+    @if ($jenis == 'tren-kualitas-air' && count($data) > 0)
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="font-weight-bold mb-3">Grafik Time-Series Kualitas Air</h6>
+                <div style="height: 380px;">
+                    <canvas id="trenKualitasChart"></canvas>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <div class="card">
         <div class="card-body">
             @if (count($data) > 0)
@@ -477,4 +528,70 @@ function notifCetak(e, el) {
     });
 }
 </script>
+
+@if ($jenis == 'tren-kualitas-air' && count($data) > 0)
+    @php
+        $rows = collect($data);
+        $labels = $rows
+            ->map(fn($r) => $r->tahun . '-P' . $r->periode)
+            ->unique()
+            ->sort()
+            ->values()
+            ->all();
+
+        $groups = $rows->groupBy(fn($r) => $r->lokasi . ' | ' . $r->parameter);
+        $datasets = [];
+        foreach ($groups as $seriesName => $seriesRows) {
+            $seriesMap = [];
+            foreach ($seriesRows as $seriesRow) {
+                $seriesMap[$seriesRow->tahun . '-P' . $seriesRow->periode] = (float) $seriesRow->rata_nilai;
+            }
+
+            $datasets[] = [
+                'label' => $seriesName,
+                'data' => array_map(fn($label) => $seriesMap[$label] ?? null, $labels),
+            ];
+        }
+    @endphp
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (function() {
+            const labels = @json($labels);
+            const datasets = @json($datasets).map((set, idx) => {
+                const colorPalette = [
+                    '#1d4ed8', '#16a34a', '#dc2626', '#9333ea',
+                    '#0f766e', '#ea580c', '#7c3aed', '#475569'
+                ];
+                const color = colorPalette[idx % colorPalette.length];
+
+                return {
+                    label: set.label,
+                    data: set.data,
+                    borderColor: color,
+                    backgroundColor: color,
+                    tension: 0.25,
+                    spanGaps: true,
+                    fill: false,
+                };
+            });
+
+            new Chart(document.getElementById('trenKualitasChart'), {
+                type: 'line',
+                data: { labels, datasets },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: { mode: 'index', intersect: false },
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Rata-rata Nilai' } },
+                        x: { title: { display: true, text: 'Periode Waktu' } }
+                    }
+                }
+            });
+        })();
+    </script>
+@endif
 @endsection
