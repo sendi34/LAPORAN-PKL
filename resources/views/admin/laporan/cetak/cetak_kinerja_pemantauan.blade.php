@@ -8,16 +8,9 @@
             margin: 15mm;
         }
 
-        @media print {
-            body {
-                margin: 0;
-                padding: 10px 20px;
-            }
-        }
-
         body {
             font-family: "Times New Roman", serif;
-            font-size: 13px;
+            font-size: 12px;
             margin: 20px 40px;
         }
 
@@ -36,7 +29,6 @@
 
         .kop-text {
             font-size: 14px;
-            text-align: center;
             line-height: 1.3;
         }
 
@@ -44,7 +36,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-top: 15px;
-            font-size: 12px;
+            font-size: 11px;
         }
 
         table,
@@ -71,74 +63,56 @@
         .clear {
             clear: both;
         }
-
-        .title {
-            text-align: center;
-            font-size: 16px;
-            margin-top: 10px;
-            text-transform: uppercase;
-        }
     </style>
 </head>
 
 <body>
-
-    <!-- KOP -->
-    <!-- KOP SURAT -->
     <div class="kop-container">
         <img src="{{ public_path('logo-dlh.png') }}" class="kop-logo" alt="Logo DLH">
         <div class="kop-text">
             <strong>PEMERINTAH PROVINSI KALIMANTAN SELATAN</strong><br>
             <strong>DINAS LINGKUNGAN HIDUP</strong><br>
-            Jalan Bangun Praja, Kel. Palam, Kec. Cempaka, Banjarbaru, Kalimantan Selatan 70732 <br> (Kawasan Perkantoran
-            Pemerintah Provinsi Kalimantan Selatan) <br>
+            Jalan Bangun Praja, Kel. Palam, Kec. Cempaka, Banjarbaru, Kalimantan Selatan 70732 <br>
             Telp/Faks: 0511-6749-241; Laman: www.dlh.kalselprov.go.id; Pos-el : blhdkalsel@gmail.com
         </div>
         <div class="clear"></div>
     </div>
 
-    <!-- JUDUL -->
-    <h3 style="text-align:center; margin-top:15px;">
-        LAPORAN TREN KUALITAS AIR
-    </h3>
+    <h3 style="text-align:center; margin-top:15px;">LAPORAN KINERJA PEMANTAUAN</h3>
 
-    <!-- TABEL -->
     <table>
         <thead>
             <tr>
                 <th>No</th>
+                <th>Kode Lokasi</th>
                 <th>Lokasi</th>
                 <th>Tahun</th>
-                <th>Periode</th>
-                <th>Parameter</th>
-                <th>Rata Nilai</th>
-                <th>Trend</th>
+                <th>Target Jadwal</th>
+                <th>Realisasi</th>
+                <th>Belum Terealisasi</th>
+                <th>Capaian (%)</th>
+                <th>Tepat Waktu (%)</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($data as $i => $row)
                 <tr>
                     <td>{{ $i + 1 }}</td>
-                    <td>{{ $row->lokasi ?? '-' }}</td>
+                    <td>{{ $row->kode_lokasi }}</td>
+                    <td>{{ $row->lokasi }}</td>
                     <td>{{ $row->tahun }}</td>
-                    <td>{{ $row->periode ?? '-' }}</td>
-                    <td>{{ $row->parameter }}</td>
-                    <td>{{ number_format($row->rata_nilai, 4) }}</td>
-                    <td>
-                        @if($row->trend == 'Naik')
-                            Naik
-                        @elseif($row->trend == 'Turun')
-                            Turun
-                        @else
-                            Stabil
-                        @endif
-                    </td>
+                    <td>{{ $row->target_jadwal }}</td>
+                    <td>{{ $row->realisasi }}</td>
+                    <td>{{ $row->belum_terealisasi }}</td>
+                    <td>{{ number_format($row->capaian_persen, 2) }}</td>
+                    <td>{{ number_format($row->tepat_waktu_persen, 2) }}</td>
+                    <td>{{ $row->status }}</td>
                 </tr>
             @endforeach
         </tbody>
     </table>
 
-    <!-- TTD -->
     <div class="footer-ttd">
         <p>Banjarbaru, {{ now()->translatedFormat('d F Y') }}</p>
         <p>Kepala Dinas Lingkungan Hidup,</p>
@@ -147,7 +121,6 @@
         Pembina Utama Muda (IV/c)<br>
         NIP. 19691212 199212 1 004
     </div>
-
 </body>
 
 </html>
